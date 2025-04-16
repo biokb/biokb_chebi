@@ -1,0 +1,42 @@
+# ALERT: Change MySQL and Neo4J passwords before use this compose file in production
+
+version: "1.0"
+name: biokb_chebi
+
+services:
+  pma:
+    image: docker.io/phpmyadmin/phpmyadmin:5.2.1
+    ports:
+      - "8081:80"
+    environment:
+      PMA_HOST: mysql
+      PMA_PORT: 3306
+
+  mysql:
+    image: docker.io/library/mysql:8.4.0
+    ports:
+      - "3307:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: root_password
+      MYSQL_DATABASE: biokb_chebi
+      MYSQL_USER: biokb_chebi_user
+      MYSQL_PASSWORD: biokb_chebi_password
+    command:
+      --sql_mode=STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION
+    volumes:
+      - mysql:/var/lib/mysql
+
+  neo4j:
+    image: docker.io/library/neo4j:5.20.0
+    ports:
+      - "7475:7474"
+      - "7688:7687"
+    volumes:
+      - neo4j_data:/data
+    environment:
+      NEO4J_AUTH: neo4j/neo4j_password
+      NEO4J_server_memory_heap_max__size: "4G"
+
+volumes:
+  neo4j_data:
+  mysql:
