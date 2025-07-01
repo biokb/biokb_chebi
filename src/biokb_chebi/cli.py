@@ -3,20 +3,21 @@
 import logging
 import re
 from typing import Optional
+
 import click
 from sqlalchemy import create_engine
 
 from biokb_chebi.constants.basic import (
     DATA_FOLDER,
+    DEFAULT_CONFIG_PATH,
     EXPORT_FOLDER,
     ZIPPED_TTLS_PATH,
-    DEFAULT_CONFIG_PATH,
 )
+from biokb_chebi.crud import import_all
 from biokb_chebi.db.importer import DatabaseImporter
 from biokb_chebi.manager import MySQLDatabase
 from biokb_chebi.neo4j_importer import Neo4jImporter
 from biokb_chebi.rdf.turtle import TurtleCreator
-from biokb_chebi.crud import import_all
 
 
 # we are creating a group
@@ -154,7 +155,7 @@ def import_data(
 @click.option(
     "-md",
     "--mysql_database",
-    default="biokb_chebi",
+    default="biokb",
     show_default=True,
     help="MySQL database.",
 )
