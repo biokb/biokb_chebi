@@ -66,7 +66,7 @@ class ChemicalData(BaseTable):
         "mysql_collate": "utf8_unicode_ci",
     }
 
-    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    id: Mapped[int] = mapped_column(primary_key=True)
 
     chemical_data: Mapped[Optional[str]] = mapped_column(Text)
     source: Mapped[str] = mapped_column(Text)
@@ -86,7 +86,7 @@ class Comment(BaseTable):
         "mysql_collate": "utf8_unicode_ci",
     }
 
-    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    id: Mapped[int] = mapped_column(primary_key=True)
 
     text: Mapped[str] = mapped_column(Text)
     created_on: Mapped[Optional[Date]] = mapped_column(Date)
