@@ -4,6 +4,18 @@ version: "1.0"
 name: biokb_chebi
 
 services:
+  fastapi:
+    build: 
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      CONNECTION_STR: "mysql+pymysql://biokb_user:biokb_passwd@mysql:3306/biokb"
+    ports:
+      - 8080:8000
+    depends_on:
+      mysql:
+        condition: service_healthy
+
   pma:
     image: docker.io/phpmyadmin/phpmyadmin:5.2.1
     ports:
@@ -17,26 +29,28 @@ services:
     ports:
       - "3307:3306"
     environment:
-      MYSQL_ROOT_PASSWORD: root_password
-      MYSQL_DATABASE: biokb_chebi
-      MYSQL_USER: biokb_chebi_user
-      MYSQL_PASSWORD: biokb_chebi_password
-    command:
-      --sql_mode=STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION
+      MYSQL_ROOT_PASSWORD: root_passwd
+      MYSQL_DATABASE: biokb
+      MYSQL_USER: biokb_user
+      MYSQL_PASSWORD: biokb_passwd
     volumes:
       - mysql:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-proot_passwd"]
+      interval: 10s
+      retries: 5
 
-  neo4j:
-    image: docker.io/library/neo4j:5.20.0
-    ports:
-      - "7475:7474"
-      - "7688:7687"
-    volumes:
-      - neo4j_data:/data
-    environment:
-      NEO4J_AUTH: neo4j/neo4j_password
-      NEO4J_server_memory_heap_max__size: "4G"
+  # neo4j:
+  #   image: docker.io/library/neo4j:5.20.0
+  #   ports:
+  #     - "7475:7474"
+  #     - "7688:7687"
+  #   volumes:
+  #     - neo4j_data:/data
+  #   environment:
+  #     NEO4J_AUTH: neo4j/neo4j_password
+  #     NEO4J_server_memory_heap_max__size: "4G"
 
 volumes:
-  neo4j_data:
+  # neo4j_data:
   mysql:
