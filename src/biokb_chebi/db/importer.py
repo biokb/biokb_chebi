@@ -23,7 +23,7 @@ from biokb_chebi.constants.chebi import (
     RELATION_FILE,
 )
 from biokb_chebi.db import models
-from biokb_chebi.db.models import BaseTable
+from biokb_chebi.db.models import Base
 
 log_file = os.path.join(LOGS_FOLDER, "importer.log")
 
@@ -96,8 +96,8 @@ class DatabaseImporter:
 
     def create_empty_db(self) -> None:
         """Creates an empty database by delete the old and recreate a new."""
-        BaseTable.metadata.drop_all(self.engine)
-        BaseTable.metadata.create_all(self.engine)
+        Base.metadata.drop_all(self.engine)
+        Base.metadata.create_all(self.engine)
 
     def import_db(self) -> Dict[str, int]:
         """Import all data in MySQL database.

@@ -1,28 +1,21 @@
 """CHEBI RDBMS model definition."""
 
-from typing import Optional, List
-
-from sqlalchemy import (
-    BLOB,
-    ForeignKey,
-    Integer,
-    String,
-    Text,
-    Date,
-)
-from sqlalchemy.orm import Mapped, DeclarativeBase, mapped_column, relationship
 import datetime
-from sqlalchemy.dialects.mysql import ENUM, SMALLINT, DATE, CHAR, VARCHAR
 from enum import Enum
+from typing import List, Optional
+
+from sqlalchemy import BLOB, Date, ForeignKey, Integer, String, Text
+from sqlalchemy.dialects.mysql import CHAR, DATE, ENUM, SMALLINT, VARCHAR
+from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
 
-class BaseTable(DeclarativeBase):
+class Base(DeclarativeBase):
     """Base class db schema."""
 
     pass
 
 
-class Compound(BaseTable):
+class Compound(Base):
     """Class definition for the chebi_compound table."""
 
     __tablename__ = "chebi_compound"
@@ -56,7 +49,7 @@ class Compound(BaseTable):
     parent_id: Mapped[Optional[int]] = mapped_column(ForeignKey("chebi_compound.id"))
 
 
-class ChemicalData(BaseTable):
+class ChemicalData(Base):
     """Class definition for the chebi_chemical_data table."""
 
     __tablename__ = "chebi_chemical_data"
@@ -76,7 +69,7 @@ class ChemicalData(BaseTable):
     compound: Mapped[Compound] = relationship(back_populates="chemicalData")
 
 
-class Comment(BaseTable):
+class Comment(Base):
     """Class definition for the chebi_comment table."""
 
     __tablename__ = "chebi_comment"
@@ -97,7 +90,7 @@ class Comment(BaseTable):
     compound: Mapped[Compound] = relationship(back_populates="comments")
 
 
-class Inchi(BaseTable):
+class Inchi(Base):
     """Class definition for the chebi_inchi table."""
 
     __tablename__ = "chebi_inchi"
@@ -115,7 +108,7 @@ class Inchi(BaseTable):
     compound: Mapped[Compound] = relationship(back_populates="inchis")
 
 
-class DatabaseAccession(BaseTable):
+class DatabaseAccession(Base):
     """Class definition for the chebi_database_accession table."""
 
     __tablename__ = "chebi_database_accession"
@@ -135,7 +128,7 @@ class DatabaseAccession(BaseTable):
     compound: Mapped[Compound] = relationship(back_populates="database_accessions")
 
 
-class Name(BaseTable):
+class Name(Base):
     """Class definition for the chebi_name table."""
 
     __tablename__ = "chebi_name"
@@ -157,7 +150,7 @@ class Name(BaseTable):
     compound: Mapped[Compound] = relationship(back_populates="names")
 
 
-class Relation(BaseTable):
+class Relation(Base):
     """Class definition for the chebi_relation table."""
 
     __tablename__ = "chebi_relation"
@@ -179,7 +172,7 @@ class Relation(BaseTable):
     init_id_compound: Mapped[Compound] = relationship(foreign_keys=[init_id])
 
 
-class Reference(BaseTable):
+class Reference(Base):
     """Class definition for the chebi_reference table."""
 
     __tablename__ = "chebi_reference"
@@ -199,7 +192,7 @@ class Reference(BaseTable):
     compound: Mapped[Compound] = relationship(back_populates="references")
 
 
-class Structure(BaseTable):
+class Structure(Base):
     """Class definition for the chebi_structure table."""
 
     __tablename__ = "chebi_structure"
