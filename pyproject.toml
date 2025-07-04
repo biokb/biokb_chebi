@@ -53,6 +53,12 @@ dev = [
 [tool.mypy]
 strict = true
 
+[dependency-groups]
+docs = [
+    "eralchemy>=1.5.0",
+    "graphviz>=0.21",
+]
+
 [project.scripts]
 biokb_chebi = "biokb_chebi.cli:main"
 
