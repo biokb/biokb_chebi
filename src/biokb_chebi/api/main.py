@@ -1,14 +1,12 @@
 import logging
 import os
-import re
 import secrets
 from contextlib import asynccontextmanager
-from typing import Annotated, Any, Generator, Optional, get_args, get_origin
+from typing import Annotated, Dict
 
 from fastapi import Depends, FastAPI, HTTPException, Query, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import HTTPBasic, HTTPBasicCredentials
-from h11 import Data
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
@@ -74,23 +72,13 @@ def verify_credentials(credentials: HTTPBasicCredentials = Depends(HTTPBasic()))
 # ========================
 
 
-@app.post(path="/import_data/", tags=[Tag.DBMANAGE])
+@app.post(path="/import_data/", response_model=dict[str, int], tags=[Tag.DBMANAGE])
 def import_data(
     credentials: HTTPBasicCredentials = Depends(verify_credentials),
-):
+) -> dict[str, int]:
     """Load a tsv file in database."""
     dbm = manager.DbManager()
     return dbm.import_data()
-
-
-@app.get("/connection_str/", response_model=str, tags=[Tag.DBMANAGE])
-async def connection_str(
-    credentials: HTTPBasicCredentials = Depends(verify_credentials),
-) -> str:
-    """
-    Search compounds.
-    """
-    return str(session.bind.url)  # type: ignore
 
 
 # tag: Compound
