@@ -68,7 +68,8 @@ class DatabaseImporter:
             redownload (bool): True if the data should be downaloded even if they already exists. Default False.
         """
         self.__data_folder = data_folder or DATA_FOLDER
-        self.engine = self.check_is_mysql_or_mariadb(engine)
+        # self.engine = self.check_is_mysql_or_mariadb(engine)
+        self.engine = engine
         self.redownload = redownload
 
     def check_is_mysql_or_mariadb(self, engine: Engine) -> Engine:
