@@ -1,0 +1,4 @@
+ID	STATUS	CHEBI_ACCESSION	SOURCE	PARENT_ID	NAME	DEFINITION	MODIFIED_ON	CREATED_BY	STAR
+1	C	CHEBI:1	ChEBI	null	N(alpha)-methyl-L-tryptophan	A N-methyl-L-alpha-amino acid  that is the N(alpha)-methyl derivative of L-tryptophan.	2019-11-21	ops$mennis	3
+2	E	CHEBI:2	ChEBI	null	acetylhistone	null	2018-12-15	ops$mennis	1
+3	C	CHEBI:3	ChEMBL	null	nalidixic acid	A monocarboxylic acid comprising 1,8-naphthyridin-4-one substituted by carboxylic acid, ethyl and methyl groups at positions 3, 1, and 7, respectively. An orally administered antibacterial, it is used in the treatment of lower urinary-tract infections due to Gram-negative bacteria, including the majority of E. coli, Enterobacter, Klebsiella, and Proteus species.	2017-06-19	LOADER	3
