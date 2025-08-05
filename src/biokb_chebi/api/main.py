@@ -71,6 +71,10 @@ def verify_credentials(credentials: HTTPBasicCredentials = Depends(HTTPBasic()))
 # tag: Database Management
 # ========================
 
+@app.get("/", tags=["Manage"])
+def check_status() -> dict:
+    return {"msg": "Running!"}
+
 
 @app.post(path="/import_data/", response_model=dict[str, int], tags=[Tag.DBMANAGE])
 def import_data(
