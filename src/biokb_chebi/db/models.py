@@ -4,7 +4,7 @@ import datetime
 from enum import Enum
 from typing import List, Optional
 
-from sqlalchemy import BLOB, Date, ForeignKey, Integer, String, Text
+from sqlalchemy import BLOB, Date, ForeignKey, Integer, String, Text, CheckConstraint
 from sqlalchemy.dialects.mysql import CHAR, DATE, ENUM, SMALLINT, VARCHAR
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
@@ -30,7 +30,8 @@ class Compound(Base):
     source: Mapped[Optional[str]] = mapped_column(VARCHAR(32))
 
     chebi_accession: Mapped[str] = mapped_column(VARCHAR(30))
-    status: Mapped[Enum] = mapped_column(ENUM("C", "D", "E", "O", "S"), index=True)
+    # status: Mapped[Enum] = mapped_column(ENUM("C", "D", "E", "O", "S"), index=True)
+    status = mapped_column(String, CheckConstraint("status IN ('C', 'D', 'E', 'O', 'S')"))    
     definition: Mapped[Optional[str]] = mapped_column(VARCHAR(4000))
     star: Mapped[int] = mapped_column(SMALLINT)
     modified_on: Mapped[Optional[datetime.date]] = mapped_column(DATE)
