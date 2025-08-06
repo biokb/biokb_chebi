@@ -40,3 +40,31 @@ def test_server(client_with_data: TestClient):
     response = client_with_data.get("/")
     assert response.status_code == 200
     assert response.json() == {"msg": "Running!"}
+
+class TestCompound:
+    def test_get_compound(self, client_with_data: TestClient):
+        response = client_with_data.get("compounds/?offset=2&limit=2")
+        assert response.status_code == 200
+        data = response.json()
+        print(data)
+
+class TestInChI:
+    pass
+
+
+class TestDatabaseAccession:
+    pass
+
+
+class TestName:
+    pass
+
+
+class TestRelation:
+    pass
+
+
+class TestReference:
+    pass
+
+
