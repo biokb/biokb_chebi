@@ -91,10 +91,6 @@ class DatabaseImporter:
             raise Exception(msg)
         return engine
 
-    def set_data_folder(self, path_to_datafolder: str) -> None:
-        """Set the data folder."""
-        self.__data_folder = path_to_datafolder
-
     def create_empty_db(self) -> None:
         """Creates an empty database by delete the old and recreate a new."""
         Base.metadata.drop_all(self.engine)
