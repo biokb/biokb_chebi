@@ -163,3 +163,4 @@ tests/data/ttls.zip
 .vscode
 .ruff_cache
 uv.lock
+tests/dbs/test.db
