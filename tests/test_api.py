@@ -1,3 +1,8 @@
+""" Unlike test_chebi.py, these tests also work without a started container (Docker/Podman)
+
+Just make sure to create a .venv, install all necessary libraries (`pip install -e .`) and install pytest (`pip install pytest`)
+"""
+
 import os
 
 import pytest
