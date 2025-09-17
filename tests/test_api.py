@@ -1,4 +1,4 @@
-""" Unlike test_chebi.py, these tests also work without a started container (Docker/Podman)
+"""Unlike test_chebi.py, these tests also work without a started container (Docker/Podman)
 
 Just make sure to create a .venv, install all necessary libraries (`pip install -e .`) and install pytest (`pip install pytest`)
 """
@@ -16,9 +16,13 @@ from biokb_chebi.db.manager import DbManager
 # Create a new test database engine (SQLite in-memory for testing)
 os.makedirs("tests/dbs", exist_ok=True)
 test_engine = create_engine("sqlite:///tests/dbs/test.db")
+# test_engine = create_engine(
+#     "mysql+pymysql://biokb_user:biokb_passwd@127.0.0.1:3307/biokb"
+# )
 TestSessionLocal = sessionmaker(bind=test_engine)
 
 ### NOTE: If you want to test the API yourself in your browser, remember to export the connection string first (`export CONNECTION_STR="sqlite:///tests/dbs/test.db"` in a Python terminal)
+
 
 # Dependency override to use test database
 def override_get_db():
@@ -47,80 +51,76 @@ def test_server(client_with_data: TestClient):
     assert response.status_code == 200
     assert response.json() == {"msg": "Running!"}
 
+
 class TestCompound:
     def test_get_compound(self, client_with_data: TestClient):
         response = client_with_data.get("compounds/?id=1")
         assert response.status_code == 200
         data = response.json()
         expected = {
-        "count": 1,
-        "offset": 0,
-        "limit": 10,
-        "results": [
-            {
-            "id": 1,
-            "name": "N(alpha)-methyl-L-tryptophan",
-            "source": "ChEBI",
-            "chebi_accession": "CHEBI:1",
-            "status": "C",
-            "definition": "A N-methyl-L-alpha-amino acid  that is the N(alpha)-methyl derivative of L-tryptophan.",
-            "star": 3,
-            "modified_on": "2019-11-21",
-            "created_by": "ops$mennis",
-            "parent_id": None,
-            "chemicalData": [
+            "count": 1,
+            "offset": 0,
+            "limit": 10,
+            "results": [
                 {
-                "chemical_data": "0",
-                "source": "ChEMBL",
-                "type": "CHARGE",
-                "compound_id": 1
+                    "id": 1,
+                    "name": "N(alpha)-methyl-L-tryptophan",
+                    "source": "ChEBI",
+                    "chebi_accession": "CHEBI:1",
+                    "status": "C",
+                    "definition": "A N-methyl-L-alpha-amino acid  that is the N(alpha)-methyl derivative of L-tryptophan.",
+                    "star": 3,
+                    "modified_on": "2019-11-21",
+                    "created_by": "ops$mennis",
+                    "parent_id": None,
+                    "chemicalData": [
+                        {
+                            "chemical_data": "0",
+                            "source": "ChEMBL",
+                            "type": "CHARGE",
+                            "compound_id": 1,
+                        }
+                    ],
+                    "comments": [
+                        {
+                            "text": "comment 1",
+                            "created_on": "2004-12-09",
+                            "datatype": "ChemicalData",
+                            "datatype_id": 4448,
+                            "compound_id": 1,
+                        }
+                    ],
+                    "database_accessions": [
+                        {
+                            "accession_number": "IND85072840",
+                            "type": "Agricola citation",
+                            "source": "Europe PMC",
+                            "compound_id": 1,
+                        }
+                    ],
+                    "names": [
+                        {
+                            "name": "name 1",
+                            "type": "BRAND NAME",
+                            "source": "ChEBI",
+                            "adapted": "F",
+                            "language": "en",
+                            "compound_id": 1,
+                        }
+                    ],
+                    "references": [
+                        {
+                            "reference_id": "67-71-0",
+                            "reference_db_name": "ACToR",
+                            "location_in_ref": None,
+                            "reference_name": None,
+                            "compound_id": 1,
+                        }
+                    ],
+                    "structures": [],
+                    "inchis": [{"inchi": "InChI=1", "compound_id": 1}],
                 }
             ],
-            "comments": [
-                {
-                "text": "comment 1",
-                "created_on": "2004-12-09",
-                "datatype": "ChemicalData",
-                "datatype_id": 4448,
-                "compound_id": 1
-                }
-            ],
-            "database_accessions": [
-                {
-                "accession_number": "IND85072840",
-                "type": "Agricola citation",
-                "source": "Europe PMC",
-                "compound_id": 1
-                }
-            ],
-            "names": [
-                {
-                "name": "name 1",
-                "type": "BRAND NAME",
-                "source": "ChEBI",
-                "adapted": "F",
-                "language": "en",
-                "compound_id": 1
-                }
-            ],
-            "references": [
-                {
-                "reference_id": "67-71-0",
-                "reference_db_name": "ACToR",
-                "location_in_ref": None,
-                "reference_name": None,
-                "compound_id": 1
-                }
-            ],
-            "structures": [],
-            "inchis": [
-                {
-                "inchi": "InChI=1",
-                "compound_id": 1
-                }
-            ]
-            }
-        ]
         }
         assert data == expected
 
@@ -147,74 +147,69 @@ class TestCompound:
         assert response.status_code == 200
         data = response.json()
         expected = {
-        "count": 3,
-        "offset": 2,
-        "limit": 2,
-        "results": [
-            {
-            "id": 3,
-            "name": "nalidixic acid",
-            "source": "ChEMBL",
-            "chebi_accession": "CHEBI:3",
-            "status": "C",
-            "definition": "A monocarboxylic acid comprising 1,8-naphthyridin-4-one substituted by carboxylic acid, ethyl and methyl groups at positions 3, 1, and 7, respectively. An orally administered antibacterial, it is used in the treatment of lower urinary-tract infections due to Gram-negative bacteria, including the majority of E. coli, Enterobacter, Klebsiella, and Proteus species.",
-            "star": 3,
-            "modified_on": "2017-06-19",
-            "created_by": "LOADER",
-            "parent_id": None,
-            "chemicalData": [
+            "count": 3,
+            "offset": 2,
+            "limit": 2,
+            "results": [
                 {
-                "chemical_data": "0",
-                "source": "KEGG DRUG",
-                "type": "CHARGE",
-                "compound_id": 3
+                    "id": 3,
+                    "name": "nalidixic acid",
+                    "source": "ChEMBL",
+                    "chebi_accession": "CHEBI:3",
+                    "status": "C",
+                    "definition": "A monocarboxylic acid comprising 1,8-naphthyridin-4-one substituted by carboxylic acid, ethyl and methyl groups at positions 3, 1, and 7, respectively. An orally administered antibacterial, it is used in the treatment of lower urinary-tract infections due to Gram-negative bacteria, including the majority of E. coli, Enterobacter, Klebsiella, and Proteus species.",
+                    "star": 3,
+                    "modified_on": "2017-06-19",
+                    "created_by": "LOADER",
+                    "parent_id": None,
+                    "chemicalData": [
+                        {
+                            "chemical_data": "0",
+                            "source": "KEGG DRUG",
+                            "type": "CHARGE",
+                            "compound_id": 3,
+                        }
+                    ],
+                    "comments": [
+                        {
+                            "text": "comment 3",
+                            "created_on": "2006-09-01",
+                            "datatype": "DatabaseAccession",
+                            "datatype_id": 99024,
+                            "compound_id": 3,
+                        }
+                    ],
+                    "database_accessions": [
+                        {
+                            "accession_number": "3196616",
+                            "type": "Beilstein Registry Number",
+                            "source": "Beilstein",
+                            "compound_id": 3,
+                        }
+                    ],
+                    "names": [
+                        {
+                            "name": "name 3",
+                            "type": "BRAND NAME",
+                            "source": "DrugBank",
+                            "adapted": "F",
+                            "language": "en",
+                            "compound_id": 3,
+                        }
+                    ],
+                    "references": [
+                        {
+                            "reference_id": "50026473",
+                            "reference_db_name": "BindingDB",
+                            "location_in_ref": None,
+                            "reference_name": None,
+                            "compound_id": 3,
+                        }
+                    ],
+                    "structures": [],
+                    "inchis": [{"inchi": "InChI=3", "compound_id": 3}],
                 }
             ],
-            "comments": [
-                {
-                "text": "comment 3",
-                "created_on": "2006-09-01",
-                "datatype": "DatabaseAccession",
-                "datatype_id": 99024,
-                "compound_id": 3
-                }
-            ],
-            "database_accessions": [
-                {
-                "accession_number": "3196616",
-                "type": "Beilstein Registry Number",
-                "source": "Beilstein",
-                "compound_id": 3
-                }
-            ],
-            "names": [
-                {
-                "name": "name 3",
-                "type": "BRAND NAME",
-                "source": "DrugBank",
-                "adapted": "F",
-                "language": "en",
-                "compound_id": 3
-                }
-            ],
-            "references": [
-                {
-                "reference_id": "50026473",
-                "reference_db_name": "BindingDB",
-                "location_in_ref": None,
-                "reference_name": None,
-                "compound_id": 3
-                }
-            ],
-            "structures": [],
-            "inchis": [
-                {
-                "inchi": "InChI=3",
-                "compound_id": 3
-                }
-            ]
-            }
-        ]
         }
         assert data == expected
 
@@ -225,29 +220,29 @@ class TestChemicalData:
         assert response.status_code == 200
         data = response.json()
         expected = {
-        "count": 1,
-        "offset": 0,
-        "limit": 10,
-        "results": [
-            {
-            "chemical_data": "0",
-            "source": "ChEMBL",
-            "type": "CHARGE",
-            "compound_id": 1,
-            "compound": {
-                "id": 1,
-                "name": "N(alpha)-methyl-L-tryptophan",
-                "source": "ChEBI",
-                "chebi_accession": "CHEBI:1",
-                "status": "C",
-                "definition": "A N-methyl-L-alpha-amino acid  that is the N(alpha)-methyl derivative of L-tryptophan.",
-                "star": 3,
-                "modified_on": "2019-11-21",
-                "created_by": "ops$mennis",
-                "parent_id": None
-            }
-            }
-        ]
+            "count": 1,
+            "offset": 0,
+            "limit": 10,
+            "results": [
+                {
+                    "chemical_data": "0",
+                    "source": "ChEMBL",
+                    "type": "CHARGE",
+                    "compound_id": 1,
+                    "compound": {
+                        "id": 1,
+                        "name": "N(alpha)-methyl-L-tryptophan",
+                        "source": "ChEBI",
+                        "chebi_accession": "CHEBI:1",
+                        "status": "C",
+                        "definition": "A N-methyl-L-alpha-amino acid  that is the N(alpha)-methyl derivative of L-tryptophan.",
+                        "star": 3,
+                        "modified_on": "2019-11-21",
+                        "created_by": "ops$mennis",
+                        "parent_id": None,
+                    },
+                }
+            ],
         }
         assert data == expected
 
@@ -275,33 +270,34 @@ class TestChemicalData:
         data = response.json()
         assert len(data["results"]) == 1
 
+
 class TestInChI:
     def test_get_inchi(self, client_with_data: TestClient):
         response = client_with_data.get("/inchi/?inchi=InChI%3D1")
         assert response.status_code == 200
         data = response.json()
         expected = {
-        "count": 1,
-        "offset": 0,
-        "limit": 10,
-        "results": [
-            {
-            "inchi": "InChI=1",
-            "compound_id": 1,
-            "compound": {
-                "id": 1,
-                "name": "N(alpha)-methyl-L-tryptophan",
-                "source": "ChEBI",
-                "chebi_accession": "CHEBI:1",
-                "status": "C",
-                "definition": "A N-methyl-L-alpha-amino acid  that is the N(alpha)-methyl derivative of L-tryptophan.",
-                "star": 3,
-                "modified_on": "2019-11-21",
-                "created_by": "ops$mennis",
-                "parent_id": None
-            }
-            }
-        ]
+            "count": 1,
+            "offset": 0,
+            "limit": 10,
+            "results": [
+                {
+                    "inchi": "InChI=1",
+                    "compound_id": 1,
+                    "compound": {
+                        "id": 1,
+                        "name": "N(alpha)-methyl-L-tryptophan",
+                        "source": "ChEBI",
+                        "chebi_accession": "CHEBI:1",
+                        "status": "C",
+                        "definition": "A N-methyl-L-alpha-amino acid  that is the N(alpha)-methyl derivative of L-tryptophan.",
+                        "star": 3,
+                        "modified_on": "2019-11-21",
+                        "created_by": "ops$mennis",
+                        "parent_id": None,
+                    },
+                }
+            ],
         }
         assert data == expected
 
@@ -336,29 +332,29 @@ class TestDatabaseAccession:
         assert response.status_code == 200
         data = response.json()
         expected = {
-        "count": 1,
-        "offset": 0,
-        "limit": 10,
-        "results": [
-            {
-            "accession_number": "257458",
-            "type": "Beilstein Registry Number",
-            "source": "Alan Wood's Pesticides",
-            "compound_id": 2,
-            "compound": {
-                "id": 2,
-                "name": "acetylhistone",
-                "source": "ChEBI",
-                "chebi_accession": "CHEBI:2",
-                "status": "E",
-                "definition": None,
-                "star": 1,
-                "modified_on": "2018-12-15",
-                "created_by": "ops$mennis",
-                "parent_id": None
-            }
-            }
-        ]
+            "count": 1,
+            "offset": 0,
+            "limit": 10,
+            "results": [
+                {
+                    "accession_number": "257458",
+                    "type": "Beilstein Registry Number",
+                    "source": "Alan Wood's Pesticides",
+                    "compound_id": 2,
+                    "compound": {
+                        "id": 2,
+                        "name": "acetylhistone",
+                        "source": "ChEBI",
+                        "chebi_accession": "CHEBI:2",
+                        "status": "E",
+                        "definition": None,
+                        "star": 1,
+                        "modified_on": "2018-12-15",
+                        "created_by": "ops$mennis",
+                        "parent_id": None,
+                    },
+                }
+            ],
         }
         assert data == expected
 
@@ -393,31 +389,31 @@ class TestName:
         assert response.status_code == 200
         data = response.json()
         expected = {
-        "count": 1,
-        "offset": 0,
-        "limit": 10,
-        "results": [
-            {
-            "name": "name 1",
-            "type": "BRAND NAME",
-            "source": "ChEBI",
-            "adapted": "F",
-            "language": "en",
-            "compound_id": 1,
-            "compound": {
-                "id": 1,
-                "name": "N(alpha)-methyl-L-tryptophan",
-                "source": "ChEBI",
-                "chebi_accession": "CHEBI:1",
-                "status": "C",
-                "definition": "A N-methyl-L-alpha-amino acid  that is the N(alpha)-methyl derivative of L-tryptophan.",
-                "star": 3,
-                "modified_on": "2019-11-21",
-                "created_by": "ops$mennis",
-                "parent_id": None
-            }
-            }
-        ]
+            "count": 1,
+            "offset": 0,
+            "limit": 10,
+            "results": [
+                {
+                    "name": "name 1",
+                    "type": "BRAND NAME",
+                    "source": "ChEBI",
+                    "adapted": "F",
+                    "language": "en",
+                    "compound_id": 1,
+                    "compound": {
+                        "id": 1,
+                        "name": "N(alpha)-methyl-L-tryptophan",
+                        "source": "ChEBI",
+                        "chebi_accession": "CHEBI:1",
+                        "status": "C",
+                        "definition": "A N-methyl-L-alpha-amino acid  that is the N(alpha)-methyl derivative of L-tryptophan.",
+                        "star": 3,
+                        "modified_on": "2019-11-21",
+                        "created_by": "ops$mennis",
+                        "parent_id": None,
+                    },
+                }
+            ],
         }
         assert data == expected
 
@@ -452,41 +448,41 @@ class TestRelation:
         assert response.status_code == 200
         data = response.json()
         expected = {
-        "count": 1,
-        "offset": 0,
-        "limit": 10,
-        "results": [
-            {
-            "type": "has_functional_parent",
-            "status": "C",
-            "final_id": 2,
-            "init_id": 1,
-            "final_id_compound": {
-                "id": 2,
-                "name": "acetylhistone",
-                "source": "ChEBI",
-                "chebi_accession": "CHEBI:2",
-                "status": "E",
-                "definition": None,
-                "star": 1,
-                "modified_on": "2018-12-15",
-                "created_by": "ops$mennis",
-                "parent_id": None
-            },
-            "init_id_compound": {
-                "id": 1,
-                "name": "N(alpha)-methyl-L-tryptophan",
-                "source": "ChEBI",
-                "chebi_accession": "CHEBI:1",
-                "status": "C",
-                "definition": "A N-methyl-L-alpha-amino acid  that is the N(alpha)-methyl derivative of L-tryptophan.",
-                "star": 3,
-                "modified_on": "2019-11-21",
-                "created_by": "ops$mennis",
-                "parent_id": None
-            }
-            }
-        ]
+            "count": 1,
+            "offset": 0,
+            "limit": 10,
+            "results": [
+                {
+                    "type": "has_functional_parent",
+                    "status": "C",
+                    "final_id": 2,
+                    "init_id": 1,
+                    "final_id_compound": {
+                        "id": 2,
+                        "name": "acetylhistone",
+                        "source": "ChEBI",
+                        "chebi_accession": "CHEBI:2",
+                        "status": "E",
+                        "definition": None,
+                        "star": 1,
+                        "modified_on": "2018-12-15",
+                        "created_by": "ops$mennis",
+                        "parent_id": None,
+                    },
+                    "init_id_compound": {
+                        "id": 1,
+                        "name": "N(alpha)-methyl-L-tryptophan",
+                        "source": "ChEBI",
+                        "chebi_accession": "CHEBI:1",
+                        "status": "C",
+                        "definition": "A N-methyl-L-alpha-amino acid  that is the N(alpha)-methyl derivative of L-tryptophan.",
+                        "star": 3,
+                        "modified_on": "2019-11-21",
+                        "created_by": "ops$mennis",
+                        "parent_id": None,
+                    },
+                }
+            ],
         }
         assert data == expected
 
@@ -521,30 +517,30 @@ class TestReference:
         assert response.status_code == 200
         data = response.json()
         expected = {
-        "count": 1,
-        "offset": 0,
-        "limit": 10,
-        "results": [
-            {
-            "reference_id": "50026473",
-            "reference_db_name": "BindingDB",
-            "location_in_ref": None,
-            "reference_name": None,
-            "compound_id": 3,
-            "compound": {
-                "id": 3,
-                "name": "nalidixic acid",
-                "source": "ChEMBL",
-                "chebi_accession": "CHEBI:3",
-                "status": "C",
-                "definition": "A monocarboxylic acid comprising 1,8-naphthyridin-4-one substituted by carboxylic acid, ethyl and methyl groups at positions 3, 1, and 7, respectively. An orally administered antibacterial, it is used in the treatment of lower urinary-tract infections due to Gram-negative bacteria, including the majority of E. coli, Enterobacter, Klebsiella, and Proteus species.",
-                "star": 3,
-                "modified_on": "2017-06-19",
-                "created_by": "LOADER",
-                "parent_id": None
-            }
-            }
-        ]
+            "count": 1,
+            "offset": 0,
+            "limit": 10,
+            "results": [
+                {
+                    "reference_id": "50026473",
+                    "reference_db_name": "BindingDB",
+                    "location_in_ref": None,
+                    "reference_name": None,
+                    "compound_id": 3,
+                    "compound": {
+                        "id": 3,
+                        "name": "nalidixic acid",
+                        "source": "ChEMBL",
+                        "chebi_accession": "CHEBI:3",
+                        "status": "C",
+                        "definition": "A monocarboxylic acid comprising 1,8-naphthyridin-4-one substituted by carboxylic acid, ethyl and methyl groups at positions 3, 1, and 7, respectively. An orally administered antibacterial, it is used in the treatment of lower urinary-tract infections due to Gram-negative bacteria, including the majority of E. coli, Enterobacter, Klebsiella, and Proteus species.",
+                        "star": 3,
+                        "modified_on": "2017-06-19",
+                        "created_by": "LOADER",
+                        "parent_id": None,
+                    },
+                }
+            ],
         }
         assert data == expected
 
@@ -571,5 +567,3 @@ class TestReference:
         assert response.status_code == 200
         data = response.json()
         assert len(data["results"]) == 1
-
-
