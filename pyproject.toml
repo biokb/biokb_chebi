@@ -15,6 +15,7 @@ dependencies = [
     "tqdm>=4.66.4",
     "fastapi[standard]>=0.115.14",
     "rdkit>=2025.3.3",
+    "requests>=2.32.5",
 ]
 requires-python = ">=3.10"
 classifiers = [
@@ -54,8 +55,7 @@ strict = true
 
 [dependency-groups]
 docs = [
-    "eralchemy>=1.5.0",
-    "graphviz>=0.21",
+    "eralchemy[graphviz]>=1.5.0",
 ]
 
 [project.scripts]

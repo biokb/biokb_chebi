@@ -1,21 +1,30 @@
 """Chebi constants."""
 
-FTP_SERVER = "ftp.ebi.ac.uk"
-FTP_DIR = "/pub/databases/chebi/Flat_file_tab_delimited/"
+import os
+
+from biokb_chebi.constants.basic import DATA_FOLDER
+
+BASE_URL_DOWNLOAD = "https://ftp.ebi.ac.uk/pub/databases/chebi/flat_files"
 
 # files on ftp server in FTP_DIR
-CHEMICAL_DATA_FILE = "chemical_data.tsv"
-COMMENT_FILE = "comments.tsv"
+CHEMICAL_DATA_FILE = "chemical_data.tsv.gz"
+COMMENT_FILE = "comments.tsv.gz"
 COMPOUND_FILE = "compounds.tsv.gz"
-DATABASE_ACCESSION_FILE = "database_accession.tsv"
+DATABASE_ACCESSION_FILE = "database_accession.tsv.gz"
 NAME_FILE = "names.tsv.gz"
 REFERENCE_FILE = "reference.tsv.gz"
-RELATION_FILE = "relation.tsv"
-STRUCTURE_FILE = "structures.csv.gz"
-INCHI_FILE = "chebiId_inchi.tsv"
-
+RELATION_FILE = "relation.tsv.gz"
+STRUCTURE_FILE = "structures.tsv.gz"
+STATUS_FILE = "status.tsv.gz"
+SOURCE_FILE = "source.tsv.gz"
+RELATION_TYPE_FILE = "relation_type.tsv.gz"
 CHEBI_URI = "http://purl.obolibrary.org/obo/CHEBI_"
 BIOKB_URI = "https://biokb.scai.fraunhofer.de"
 BASE_URI = f"{BIOKB_URI}/chebi"
 
 BASIC_NODE_LABEL = "DbChEBI"
+
+NEO4J_PASSWORD = "your_neo4j_password"
+NEO4J_URI = "bolt://localhost:7687"
+NEO4J_USER = "neo4j"
+ZIPPED_TTLS_PATH = os.path.join(DATA_FOLDER, "ttls.zip")

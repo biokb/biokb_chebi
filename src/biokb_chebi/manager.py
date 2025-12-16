@@ -1,12 +1,14 @@
 """Database manager module."""
 
+import configparser
 import logging
 import os
 from typing import Optional
+
 from neo4j import Driver, GraphDatabase
-from sqlalchemy import create_engine, Engine
+from sqlalchemy import Engine, create_engine
 from sqlalchemy.pool import PoolProxiedConnection
-import configparser
+
 from biokb_chebi.constants.basic import DEFAULT_CONFIG_PATH, LOGS_FOLDER
 
 log_file = os.path.join(LOGS_FOLDER, "importer.log")
@@ -16,7 +18,6 @@ if not os.path.exists(LOGS_FOLDER):
 
 
 logging.basicConfig(
-    level=logging.WARNING,
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
     filemode="w",
     filename=log_file,

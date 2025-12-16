@@ -71,18 +71,27 @@ def verify_credentials(credentials: HTTPBasicCredentials = Depends(HTTPBasic()))
 # tag: Database Management
 # ========================
 
+
 @app.get("/", tags=["Manage"])
 def check_status() -> dict:
     return {"msg": "Running!"}
 
 
-@app.post(path="/import_data/", response_model=dict[str, int], tags=[Tag.DBMANAGE])
+@app.post(
+    path="/import_data/",
+    response_model=dict[str, int],
+    tags=[Tag.DBMANAGE],
+)
 def import_data(
     credentials: HTTPBasicCredentials = Depends(verify_credentials),
+    redownload: bool = Query(
+        False,
+        description="Whether to re-download data files even if they already exist, ensuring the newest version.",
+    ),
 ) -> dict[str, int]:
-    """Load a tsv file in database."""
+    """Download data if not exists and load a tsv file in database."""
     dbm = manager.DbManager()
-    return dbm.import_data()
+    return dbm.import_data(redownload=redownload)
 
 
 # tag: Compound

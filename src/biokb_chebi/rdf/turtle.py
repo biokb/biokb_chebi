@@ -2,18 +2,22 @@
 
 import logging
 import os.path
+import re
 import shutil
-from tqdm import tqdm
+from platform import node
 from typing import Optional
 
 import pandas as pd
-from biokb_chebi.constants.basic import EXPORT_FOLDER
-from biokb_chebi.constants.chebi import BASIC_NODE_LABEL
-from biokb_chebi.rdf import namespaces as ns
 from pandas import DataFrame
-from rdflib import RDF, XSD, Graph, Literal, URIRef
-from rdkit.Chem.inchi import InchiToInchiKey
-from sqlalchemy import Engine
+from rdflib import RDF, XSD, Graph, Literal, Namespace, URIRef
+from sqlalchemy import Engine, create_engine, select
+from sqlalchemy.orm import sessionmaker
+from tqdm import tqdm
+
+from biokb_chebi.constants.basic import DB_DEFAULT_CONNECTION_STR, EXPORT_FOLDER
+from biokb_chebi.constants.chebi import BASIC_NODE_LABEL
+from biokb_chebi.db import models
+from biokb_chebi.rdf import namespaces as ns
 
 logging.basicConfig(
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
@@ -24,14 +28,13 @@ logger: logging.Logger = logging.getLogger(__name__)
 def get_empty_graph() -> Graph:
     """Return an empty RDFlib.Graph with all needed namespaces"""
     graph = Graph()
-    graph.bind("chebi", ns.chebi)
-    graph.bind("node", ns.node)
-    graph.bind("relation", ns.relation)
+    graph.bind("c", ns.CHEBI_NS)
+    graph.bind("n", ns.NODE_NS)
+    graph.bind("r", ns.REL_NS)
     graph.bind("xs", XSD)
-    graph.bind("inchi", ns.inchi)
-    graph.bind("chebi_name", ns.name)
-    graph.bind("cas", ns.cas)
-    graph.bind("patent", ns.patent)
+    graph.bind("i", ns.INCHI_NS)
+    graph.bind("cn", ns.NAME_NS)
+    graph.bind("s", ns.CAS_NS)
     return graph
 
 
@@ -40,7 +43,7 @@ class TurtleCreator:
 
     def __init__(
         self,
-        engine: Engine,
+        engine: Optional[Engine] = None,
         export_to_folder: Optional[str] = None,
     ):
         """Init TurtleCreator
@@ -53,7 +56,10 @@ class TurtleCreator:
             engine (Engine | None, optional): SQLAlchemy class. Defaults to None.
             export_to_folder (str | None, optional): _description_. Defaults to None.
         """
-        self.engine = engine
+        connection_str = os.getenv("CONNECTION_STR", DB_DEFAULT_CONNECTION_STR)
+        self.__engine = engine if engine else create_engine(str(connection_str))
+        self.Session = sessionmaker(bind=self.__engine)
+
         if export_to_folder:
             ttls_folder = os.path.join(export_to_folder, "ttls")
             self.__ttls_folder = ttls_folder
@@ -62,21 +68,20 @@ class TurtleCreator:
         if not os.path.exists(self.__ttls_folder):
             os.makedirs(self.__ttls_folder)
 
-    def create_all_ttls(self) -> str:
-        """Create all turle files.
+    def create_ttls(self) -> str:
+        """Create all turtle files.
 
         Returns:
             str: path zipped file with ttls.
         """
         create_methods = [
             self.create_compounds_ttl,
-            self.create_inchis_ttl,
+            self.create_inchis_links_ttl,
             self.create_names_ttl,
-            self.create_cas_numbers_ttl,
-            self.create_patents_ttl,
+            self.create_xrefs_ttl,
             self.create_compound_relations_ttl,
         ]
-        for create_method in tqdm(create_methods, desc="Create turtle files"):
+        for create_method in create_methods:
             create_method()
 
         return self.create_zip_from_all_ttls()
@@ -94,96 +99,63 @@ class TurtleCreator:
         shutil.rmtree(self.__ttls_folder)
         return path_to_zip_file
 
-    @property
-    def compound_df(self) -> DataFrame:
-        """Return ChEBI compound dataframe for status C and E
-
-        1. C = Checked and published by ChEBI curators.
-        2. E = Exists but not been checked by one of our curators.
-
-        """
-        sql = (
-            "SELECT id, name, source, status, star, definition "
-            "FROM chebi_compound WHERE status in ('C', 'E') AND parent_id IS NULL"
-        )
-        return pd.read_sql(sql, self.engine)
-
     def create_compounds_ttl(self) -> None:
         """Create compound turtle file."""
         ttl_path = os.path.join(self.__ttls_folder, "compound.ttl")
         logger.info(f"Create compound ttl and save in {ttl_path}")
         graph = get_empty_graph()
 
-        for i, row in self.compound_df.iterrows():
-            subject = ns.chebi[str(row.id)]
-            graph.add((subject, RDF.type, ns.node["Compound"]))
-            graph.add((subject, RDF.type, ns.node[BASIC_NODE_LABEL]))
+        with self.Session() as session:
+            compounds = session.query(models.Compound).all()
+            for comp in tqdm(compounds):
+                compound = ns.CHEBI_NS[str(comp.id)]
+                graph.add((compound, RDF.type, ns.NODE_NS["Compound"]))
+                graph.add((compound, RDF.type, ns.NODE_NS[BASIC_NODE_LABEL]))
 
-            for column in ["name", "source", "status", "definition"]:
-                if not pd.isna(row[column]):
-                    graph.add(
-                        (
-                            subject,
-                            ns.relation[column],
-                            Literal(row[column], datatype=XSD.string),
+                for column in ["ascii_name", "source", "status_id", "definition"]:
+                    if not pd.isna(getattr(comp, column)):
+                        graph.add(
+                            (
+                                compound,
+                                ns.REL_NS[column],
+                                Literal(getattr(comp, column), datatype=XSD.string),
+                            )
                         )
+                graph.add(
+                    (
+                        compound,
+                        ns.REL_NS["star"],
+                        Literal(int(comp.stars), datatype=XSD.integer),
                     )
+                )
+                if comp.parent_id:
+                    parent = ns.CHEBI_NS[str(comp.parent_id)]
+                    graph.add((compound, ns.REL_NS["HAS_PARENT"], parent))
 
         graph.serialize(ttl_path, format="turtle")
         del graph
 
-    @property
-    def inchi_df(self) -> DataFrame:
-        """Return ChEBI InCHI dataframe."""
-        sql = (
-            "SELECT i.compound_id, i.inchi FROM chebi_inchi i INNER JOIN "
-            "chebi_compound c ON (c.id=i.compound_id) "
-            "WHERE c.status in ('C', 'E') AND c.parent_id IS NULL"
-        )
-        df: DataFrame = pd.read_sql(sql, self.engine)
-        df["inchikey"] = df.inchi.apply(lambda x: InchiToInchiKey(x))
-        return df
-
-    def create_inchis_ttl(self) -> None:
-        """Create InChi turtle file."""
+    def create_inchis_links_ttl(self) -> None:
+        """Create Compound/InChi links turtle file."""
         ttl_path = os.path.join(self.__ttls_folder, "inchi.ttl")
         logger.info(f"Create InChi ttl and save in {ttl_path}")
         graph = get_empty_graph()
 
-        for i, row in self.inchi_df.iterrows():
-            inchi = ns.inchi[str(row.inchikey)]
-            graph.add((inchi, RDF.type, ns.node["InChI"]))
-            graph.add((inchi, RDF.type, ns.node[BASIC_NODE_LABEL]))
-            compound = URIRef(ns.chebi[str(row.compound_id)])
-            graph.add((compound, ns.relation["HAS_INCHI"], inchi))
+        with self.Session() as session:
+            inchis: models.List[models.Structure] = (
+                session.query(models.Structure)
+                .where(models.Structure.standard_inchi_key.isnot(None))
+                .all()
+            )
 
-            for column in ["inchi", "inchikey"]:
-                if not pd.isna(row[column]):
-                    graph.add(
-                        (
-                            inchi,
-                            ns.relation[column],
-                            Literal(row[column], datatype=XSD.string),
-                        )
-                    )
+            for inc in tqdm(inchis):
+                inchi = ns.INCHI_NS[str(inc.standard_inchi_key)]
+                graph.add((inchi, RDF.type, ns.NODE_NS["InChI"]))
+                compound = URIRef(ns.CHEBI_NS[str(inc.compound_id)])
+                graph.add((compound, ns.REL_NS["SAME_AS"], inchi))
 
         graph.serialize(ttl_path, format="turtle")
         del graph
-
-    @property
-    def name_df(self) -> DataFrame:
-        """Return ChEBI InCHI dataframe.
-
-        Returns:
-            DataFrame: DataFrame with ChEBI names
-        """
-        sql = (
-            "SELECT n.id,n.name, n.type, n.source, n.adapted, n.language,n.compound_id "
-            "FROM chebi_name n INNER JOIN chebi_compound c ON (c.id=n.compound_id) "
-            "WHERE c.status in ('C', 'E') AND c.parent_id IS NULL"
-        )
-        df: DataFrame = pd.read_sql(sql, self.engine)
-        return df
 
     def create_names_ttl(self) -> str:
         """Create ChEBI name turtle file.
@@ -195,139 +167,119 @@ class TurtleCreator:
         logger.info(f"Create ChEBI names ttl and save in {ttl_path}.")
         graph = get_empty_graph()
 
-        for i, row in self.name_df.iterrows():
-            chebi_name = ns.name[str(row.id)]
-            graph.add((chebi_name, RDF.type, ns.node["Name"]))
-            graph.add((chebi_name, RDF.type, ns.node[BASIC_NODE_LABEL]))
-            compound = URIRef(ns.chebi[str(row.compound_id)])
-            graph.add((compound, ns.relation["HAS_NAME"], chebi_name))
+        with self.Session() as session:
+            names = session.query(models.Name).all()
 
-            for column in ["type", "source", "adapted", "language", "name"]:
-                if not pd.isna(row[column]):
+            for name in tqdm(names):
+                node_label = "Name" + name.type.capitalize().replace(" ", "")
+                chebi_name = ns.NAME_NS[str(name.id)]
+                graph.add((chebi_name, RDF.type, ns.NODE_NS[node_label]))
+                graph.add((chebi_name, RDF.type, ns.NODE_NS["OtherName"]))
+                graph.add((chebi_name, RDF.type, ns.NODE_NS[BASIC_NODE_LABEL]))
+                compound = URIRef(ns.CHEBI_NS[str(name.compound_id)])
+                graph.add((compound, ns.REL_NS["HAS_NAME"], chebi_name))
+
+                for column in ["adapted", "language_code", "ascii_name", "status_id"]:
+                    value = getattr(name, column)
+                    datatype = XSD.string if isinstance(value, str) else XSD.integer
                     graph.add(
                         (
                             chebi_name,
-                            ns.relation[column],
-                            Literal(row[column], datatype=XSD.string),
+                            ns.REL_NS[column],
+                            Literal(value, datatype=datatype),
                         )
                     )
         graph.serialize(ttl_path, format="turtle")
         del graph
         return ttl_path
 
-    @property
-    def cas_number_df(self) -> DataFrame:
-        """Return CAS number dataframe."""
-        sql = """SELECT 
-            da.accession_number as number, 
-            group_concat(distinct da.source order by da.source) as sources, 
-            da.compound_id  
-        FROM  
-            chebi_database_accession da INNER JOIN 
-            chebi_compound c ON (c.id=da.compound_id)
-        WHERE 
-            da.type='CAS Registry Number' AND c.status in ('C', 'E') AND 
-            c.parent_id IS NULL 
-        GROUP BY 
-            da.compound_id, da.accession_number"""
-        return pd.read_sql(sql, self.engine)
-
-    def create_cas_numbers_ttl(self) -> str:
-        """Create CAS number turtle file.
+    def create_xrefs_ttl(
+        self,
+        include: list[str] = [
+            "gxa.expt",
+            "gxa.expt",
+            "biomodels.db",
+            "bindingdb",
+            "reactome",
+            "chembl",
+            "surechembl",
+            "brenda.ligand",
+            "go",
+            "rhea",
+            "eccode",
+        ],
+        exclude: list[str] = [],
+    ):
+        """Create xref turtle file.
 
         Returns:
-            str: Path to turtle file with CAS numbers.
+            str: Path to turtle file with xref links.
         """
-        ttl_path = os.path.join(self.__ttls_folder, "cas.ttl")
-        logger.info(f"Create CAS number ttl and save in {ttl_path}")
-        graph = get_empty_graph()
+        with self.Session() as session:
+            sources = session.query(models.Source).all()
+            if include:
+                sources = [source for source in sources if source.prefix in include]
+            if exclude:
+                sources = [source for source in sources if source.prefix not in exclude]
 
-        for i, row in self.cas_number_df.iterrows():
-            cas = ns.cas[str(row.number)]
-            graph.add((cas, RDF.type, ns.node["Cas"]))
-            graph.add((cas, RDF.type, ns.node[BASIC_NODE_LABEL]))
-            compound = URIRef(ns.chebi[str(row.compound_id)])
-            graph.add((compound, ns.relation["HAS_CAS"], cas))
+            references = (
+                session.query(models.Reference)
+                .where(models.Reference.source_id.in_([x.id for x in sources]))
+                .all()
+            )
 
-            for column in ["number", "sources"]:
-                if not pd.isna(row[column]):
-                    graph.add(
-                        (
-                            cas,
-                            ns.relation[column],
-                            Literal(row[column], datatype=XSD.string),
-                        )
+            for source in sources:
+                if source.prefix not in ns.REF_NS_DICT:
+                    logger.warning(
+                        f"Source prefix {source.prefix} not in REF_NS_DICT. Skipping."
                     )
-        graph.serialize(ttl_path, format="turtle")
-        del graph
-        return ttl_path
+                    continue
+                ttl_path = os.path.join(
+                    self.__ttls_folder,
+                    f"{source.prefix.replace('.', '_').lower()}_xref.ttl",
+                )
+                logger.info(f"Create xref ttl and save in {ttl_path}")
 
-    @property
-    def patent_df(self) -> DataFrame:
-        """Return patent dataframe."""
-        sql = (
-            "SELECT r.reference_id as patent_id, r.reference_name name, r.compound_id "
-            "FROM  `chebi_reference` r INNER JOIN chebi_compound c ON (c.id=r.compound_id) "
-            "WHERE `reference_db_name` = 'Patent' AND c.status in ('C', 'E') AND c.parent_id IS NULL"
-        )
-        return pd.read_sql(sql, self.engine)
+                graph = get_empty_graph()
+                graph.bind("e", ns.REF_NS_DICT[source.prefix])
 
-    def create_patents_ttl(self) -> str:
-        """Create patent turtle file.
+                references = (
+                    session.query(models.Reference)
+                    .filter(models.Reference.source_id == source.id)
+                    .all()
+                )
+                for ref in tqdm(references, desc=f"Creating xrefs for {source.prefix}"):
+                    compound = URIRef(ns.CHEBI_NS[str(ref.compound_id)])
+                    xref = ns.REF_NS_DICT[source.prefix][str(ref.accession_number)]
+                    node_label = "Xref" + re.sub(r"\W", "", source.prefix.capitalize())
+                    graph.add((xref, RDF.type, ns.NODE_NS[node_label]))
+                    graph.add((compound, ns.REL_NS["HAS_XREF"], xref))
 
-        Returns:
-            str: Path to turtle file with patents.
-        """
-        ttl_path = os.path.join(self.__ttls_folder, "patent.ttl")
-        logger.info(f"Create patent ttl and save in {ttl_path}")
-        graph = get_empty_graph()
-
-        for i, row in self.patent_df.iterrows():
-            patent = ns.cas[str(row.patent_id)]
-            graph.add((patent, RDF.type, ns.node["Patent"]))
-            graph.add((patent, RDF.type, ns.node[BASIC_NODE_LABEL]))
-            compound = URIRef(ns.chebi[str(row.compound_id)])
-            graph.add((compound, ns.relation["HAS_PATENT"], patent))
-
-            for column in ["name", "patent_id"]:
-                if not pd.isna(row[column]):
-                    graph.add(
-                        (
-                            patent,
-                            ns.relation[column],
-                            Literal(row[column], datatype=XSD.string),
-                        )
-                    )
-        graph.serialize(ttl_path, format="turtle")
-        del graph
-        return ttl_path
-
-    @property
-    def chebi_compound_relation_df(self) -> DataFrame:
-        """Return ChEBI compound relation dataframe."""
-        sql = (
-            "SELECT r.type, init_id, final_id FROM chebi_relation r "
-            "inner join chebi_compound c1 ON (c1.id=r.init_id) "
-            "inner join chebi_compound c2 ON (c2.id=r.final_id) "
-            "WHERE r.status in ('C','E') and "
-            "c1.status in ('C', 'E') and c2.status in ('C', 'E')"
-        )
-        return pd.read_sql(sql, self.engine)
+                graph.serialize(ttl_path, format="turtle")
+                del graph
 
     def create_compound_relations_ttl(self) -> str:
         """Create compound relation turtle file.
 
         Returns:
-            str: Path to turle file with ChEBI relations.
+            str: Path to turtle file with ChEBI relations.
         """
         ttl_path = os.path.join(self.__ttls_folder, "relation.ttl")
         logger.info(f"Create ChEBI compound relations ttl and save in {ttl_path}")
         graph = get_empty_graph()
 
-        for i, row in self.chebi_compound_relation_df.iterrows():
-            compound_1 = URIRef(ns.chebi[str(row.init_id)])
-            compound_2 = URIRef(ns.chebi[str(row.final_id)])
-            graph.add((compound_2, ns.relation[str(row.type).upper()], compound_1))
+        with self.Session() as session:
+            relations = session.query(models.Relation).all()
+            for rel in tqdm(relations):
+                compound_1 = URIRef(ns.CHEBI_NS[str(rel.init_id)])
+                compound_2 = URIRef(ns.CHEBI_NS[str(rel.final_id)])
+                graph.add(
+                    (
+                        compound_1,
+                        ns.REL_NS[str(rel.relation_type.code).upper()],
+                        compound_2,
+                    )
+                )
 
         graph.serialize(ttl_path, format="turtle")
         del graph
