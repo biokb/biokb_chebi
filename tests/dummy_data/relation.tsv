@@ -1,4 +1,0 @@
-ID	TYPE	INIT_ID	FINAL_ID	STATUS
-1	has_functional_parent	1	2	C
-2	has_functional_parent	2	3	E
-3	has_functional_parent	3	1	S

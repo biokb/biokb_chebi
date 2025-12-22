@@ -4,11 +4,13 @@ Just make sure to create a .venv, install all necessary libraries (`pip install 
 """
 
 import os
+from typing import Generator
 
 import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
+from sqlalchemy.orm.session import Session
 
 from biokb_chebi.api.main import app, get_session
 from biokb_chebi.db.manager import DbManager
@@ -25,8 +27,8 @@ TestSessionLocal = sessionmaker(bind=test_engine)
 
 
 # Dependency override to use test database
-def override_get_db():
-    db = TestSessionLocal()
+def override_get_db() -> Generator[Session, None, None]:
+    db: Session = TestSessionLocal()
     try:
         yield db
     finally:
@@ -38,7 +40,7 @@ app.dependency_overrides[get_session] = override_get_db
 
 
 @pytest.fixture()
-def client_with_data():
+def client_with_data() -> TestClient:
     # Create tables in the test database
     test_data_folder = os.path.join("tests", "dummy_data")
     dm = DbManager(test_engine, test_data_folder)
@@ -46,14 +48,14 @@ def client_with_data():
     return TestClient(app)
 
 
-def test_server(client_with_data: TestClient):
+def test_server(client_with_data: TestClient) -> None:
     response = client_with_data.get("/")
     assert response.status_code == 200
     assert response.json() == {"msg": "Running!"}
 
 
 class TestCompound:
-    def test_get_compound(self, client_with_data: TestClient):
+    def test_get_compound(self, client_with_data: TestClient) -> None:
         response = client_with_data.get("compounds/?id=1")
         assert response.status_code == 200
         data = response.json()
@@ -124,25 +126,25 @@ class TestCompound:
         }
         assert data == expected
 
-    def test_list_compounds(self, client_with_data: TestClient):
+    def test_list_compounds(self, client_with_data: TestClient) -> None:
         response = client_with_data.get("/compounds/")
         assert response.status_code == 200
         data = response.json()
         assert len(data["results"]) == 3
 
-    def test_list_compounds_offset(self, client_with_data: TestClient):
+    def test_list_compounds_offset(self, client_with_data: TestClient) -> None:
         response = client_with_data.get("/compounds/?offset=2")
         assert response.status_code == 200
         data = response.json()
         assert len(data["results"]) == 1
 
-    def test_list_compounds_limit(self, client_with_data: TestClient):
+    def test_list_compounds_limit(self, client_with_data: TestClient) -> None:
         response = client_with_data.get("/compounds/?limit=2")
         assert response.status_code == 200
         data = response.json()
         assert len(data["results"]) == 2
 
-    def test_list_compounds_offset_limit(self, client_with_data: TestClient):
+    def test_list_compounds_offset_limit(self, client_with_data: TestClient) -> None:
         response = client_with_data.get("compounds/?offset=2&limit=2")
         assert response.status_code == 200
         data = response.json()
@@ -215,7 +217,7 @@ class TestCompound:
 
 
 class TestChemicalData:
-    def test_get_chemical_data(self, client_with_data: TestClient):
+    def test_get_chemical_data(self, client_with_data: TestClient) -> None:
         response = client_with_data.get("/chemical_data/?compound_id=1")
         assert response.status_code == 200
         data = response.json()
@@ -246,25 +248,27 @@ class TestChemicalData:
         }
         assert data == expected
 
-    def test_list_chemical_data(self, client_with_data: TestClient):
+    def test_list_chemical_data(self, client_with_data: TestClient) -> None:
         response = client_with_data.get("/chemical_data/")
         assert response.status_code == 200
         data = response.json()
         assert len(data["results"]) == 3
 
-    def test_list_chemical_data_offset(self, client_with_data: TestClient):
+    def test_list_chemical_data_offset(self, client_with_data: TestClient) -> None:
         response = client_with_data.get("/chemical_data/?offset=1")
         assert response.status_code == 200
         data = response.json()
         assert len(data["results"]) == 2
 
-    def test_list_chemical_data_limit(self, client_with_data: TestClient):
+    def test_list_chemical_data_limit(self, client_with_data: TestClient) -> None:
         response = client_with_data.get("/chemical_data/?limit=2")
         assert response.status_code == 200
         data = response.json()
         assert len(data["results"]) == 2
 
-    def test_list_chemical_data_offset_limit(self, client_with_data: TestClient):
+    def test_list_chemical_data_offset_limit(
+        self, client_with_data: TestClient
+    ) -> None:
         response = client_with_data.get("/chemical_data/?offset=2&limit=2")
         assert response.status_code == 200
         data = response.json()
@@ -272,7 +276,7 @@ class TestChemicalData:
 
 
 class TestInChI:
-    def test_get_inchi(self, client_with_data: TestClient):
+    def test_get_inchi(self, client_with_data: TestClient) -> None:
         response = client_with_data.get("/inchi/?inchi=InChI%3D1")
         assert response.status_code == 200
         data = response.json()
@@ -301,25 +305,25 @@ class TestInChI:
         }
         assert data == expected
 
-    def test_list_inchi(self, client_with_data: TestClient):
+    def test_list_inchi(self, client_with_data: TestClient) -> None:
         response = client_with_data.get("/inchi/")
         assert response.status_code == 200
         data = response.json()
         assert len(data["results"]) == 3
 
-    def test_list_inchi_offset(self, client_with_data: TestClient):
+    def test_list_inchi_offset(self, client_with_data: TestClient) -> None:
         response = client_with_data.get("/inchi/?offset=1")
         assert response.status_code == 200
         data = response.json()
         assert len(data["results"]) == 2
 
-    def test_list_inchi_limit(self, client_with_data: TestClient):
+    def test_list_inchi_limit(self, client_with_data: TestClient) -> None:
         response = client_with_data.get("/inchi/?limit=2")
         assert response.status_code == 200
         data = response.json()
         assert len(data["results"]) == 2
 
-    def test_list_inchi_offset_limit(self, client_with_data: TestClient):
+    def test_list_inchi_offset_limit(self, client_with_data: TestClient) -> None:
         response = client_with_data.get("/inchi/?offset=2&limit=2")
         assert response.status_code == 200
         data = response.json()
@@ -327,7 +331,7 @@ class TestInChI:
 
 
 class TestDatabaseAccession:
-    def test_get_database_accession(self, client_with_data: TestClient):
+    def test_get_database_accession(self, client_with_data: TestClient) -> None:
         response = client_with_data.get("/database_accession/?accession_number=257458")
         assert response.status_code == 200
         data = response.json()
@@ -358,25 +362,27 @@ class TestDatabaseAccession:
         }
         assert data == expected
 
-    def test_list_database_accession(self, client_with_data: TestClient):
+    def test_list_database_accession(self, client_with_data: TestClient) -> None:
         response = client_with_data.get("/database_accession/")
         assert response.status_code == 200
         data = response.json()
         assert len(data["results"]) == 3
 
-    def test_list_database_accession_offset(self, client_with_data: TestClient):
+    def test_list_database_accession_offset(self, client_with_data: TestClient) -> None:
         response = client_with_data.get("/database_accession/?offset=1")
         assert response.status_code == 200
         data = response.json()
         assert len(data["results"]) == 2
 
-    def test_list_database_accession_limit(self, client_with_data: TestClient):
+    def test_list_database_accession_limit(self, client_with_data: TestClient) -> None:
         response = client_with_data.get("/database_accession/?limit=2")
         assert response.status_code == 200
         data = response.json()
         assert len(data["results"]) == 2
 
-    def test_list_database_accession_offset_limit(self, client_with_data: TestClient):
+    def test_list_database_accession_offset_limit(
+        self, client_with_data: TestClient
+    ) -> None:
         response = client_with_data.get("/database_accession/?offset=2&limit=2")
         assert response.status_code == 200
         data = response.json()
@@ -384,7 +390,7 @@ class TestDatabaseAccession:
 
 
 class TestName:
-    def test_get_name(self, client_with_data: TestClient):
+    def test_get_name(self, client_with_data: TestClient) -> None:
         response = client_with_data.get("/name/?name=name%201")
         assert response.status_code == 200
         data = response.json()
@@ -417,25 +423,25 @@ class TestName:
         }
         assert data == expected
 
-    def test_list_name(self, client_with_data: TestClient):
+    def test_list_name(self, client_with_data: TestClient) -> None:
         response = client_with_data.get("/name/")
         assert response.status_code == 200
         data = response.json()
         assert len(data["results"]) == 3
 
-    def test_list_name_offset(self, client_with_data: TestClient):
+    def test_list_name_offset(self, client_with_data: TestClient) -> None:
         response = client_with_data.get("/name/?offset=1")
         assert response.status_code == 200
         data = response.json()
         assert len(data["results"]) == 2
 
-    def test_list_name_limit(self, client_with_data: TestClient):
+    def test_list_name_limit(self, client_with_data: TestClient) -> None:
         response = client_with_data.get("/name/?limit=2")
         assert response.status_code == 200
         data = response.json()
         assert len(data["results"]) == 2
 
-    def test_list_name_offset_limit(self, client_with_data: TestClient):
+    def test_list_name_offset_limit(self, client_with_data: TestClient) -> None:
         response = client_with_data.get("/name/?offset=2&limit=2")
         assert response.status_code == 200
         data = response.json()
@@ -443,7 +449,7 @@ class TestName:
 
 
 class TestRelation:
-    def test_get_relation(self, client_with_data: TestClient):
+    def test_get_relation(self, client_with_data: TestClient) -> None:
         response = client_with_data.get("/relation/?final_id=2&init_id=1")
         assert response.status_code == 200
         data = response.json()
@@ -486,25 +492,25 @@ class TestRelation:
         }
         assert data == expected
 
-    def test_list_relation(self, client_with_data: TestClient):
+    def test_list_relation(self, client_with_data: TestClient) -> None:
         response = client_with_data.get("/relation/")
         assert response.status_code == 200
         data = response.json()
         assert len(data["results"]) == 3
 
-    def test_list_relation_offset(self, client_with_data: TestClient):
+    def test_list_relation_offset(self, client_with_data: TestClient) -> None:
         response = client_with_data.get("/relation/?offset=1")
         assert response.status_code == 200
         data = response.json()
         assert len(data["results"]) == 2
 
-    def test_list_relation_limit(self, client_with_data: TestClient):
+    def test_list_relation_limit(self, client_with_data: TestClient) -> None:
         response = client_with_data.get("/relation/?limit=2")
         assert response.status_code == 200
         data = response.json()
         assert len(data["results"]) == 2
 
-    def test_list_relation_offset_limit(self, client_with_data: TestClient):
+    def test_list_relation_offset_limit(self, client_with_data: TestClient) -> None:
         response = client_with_data.get("/relation/?offset=2&limit=2")
         assert response.status_code == 200
         data = response.json()
@@ -512,7 +518,7 @@ class TestRelation:
 
 
 class TestReference:
-    def test_get_reference(self, client_with_data: TestClient):
+    def test_get_reference(self, client_with_data: TestClient) -> None:
         response = client_with_data.get("/reference/?reference_id=50026473")
         assert response.status_code == 200
         data = response.json()
@@ -544,25 +550,25 @@ class TestReference:
         }
         assert data == expected
 
-    def test_list_reference(self, client_with_data: TestClient):
+    def test_list_reference(self, client_with_data: TestClient) -> None:
         response = client_with_data.get("/reference/")
         assert response.status_code == 200
         data = response.json()
         assert len(data["results"]) == 3
 
-    def test_list_reference_offset(self, client_with_data: TestClient):
+    def test_list_reference_offset(self, client_with_data: TestClient) -> None:
         response = client_with_data.get("/reference/?offset=1")
         assert response.status_code == 200
         data = response.json()
         assert len(data["results"]) == 2
 
-    def test_list_reference_limit(self, client_with_data: TestClient):
+    def test_list_reference_limit(self, client_with_data: TestClient) -> None:
         response = client_with_data.get("/reference/?limit=2")
         assert response.status_code == 200
         data = response.json()
         assert len(data["results"]) == 2
 
-    def test_list_reference_offset_limit(self, client_with_data: TestClient):
+    def test_list_reference_offset_limit(self, client_with_data: TestClient) -> None:
         response = client_with_data.get("/reference/?offset=2&limit=2")
         assert response.status_code == 200
         data = response.json()
