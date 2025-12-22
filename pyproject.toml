@@ -24,6 +24,7 @@ classifiers = [
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
     "Environment :: Console",
     "Intended Audience :: Science/Research",
     "Topic :: Scientific/Engineering :: Bio-Informatics",
@@ -36,29 +37,43 @@ readme = "README.md"
 license = {text = "MIT"}
 
 [build-system]
-requires = ["pdm-backend"]
-build-backend = "pdm.backend"
+requires = ["hatchling"]
+build-backend = "hatchling.build"
 
-
-[tool.pdm.dev-dependencies]
-dev = [
-    "pytest>=8.2.0",
-    "tox>=4.15.0",
-    "black>=24.4.2",
-    "pytest-cov>=5.0.0",
-    "pandas-stubs>=2.2.2.240514",
-    "types-tqdm>=4.66.0.20240417",
-]
 
 [tool.mypy]
 strict = true
+python_version = "3.13"
+show_error_codes = true
+pretty = true
+[[tool.mypy.overrides]]
+module = "rdflib_neo4j.*"
+ignore_missing_imports = true
 
 [dependency-groups]
 docs = [
     "eralchemy[graphviz]>=1.5.0",
 ]
+dev = [
+    "tox>=4.15.0",
+    "black>=24.4.2",
+    "pandas-stubs>=2.2.2.240514",
+    "types-tqdm>=4.66.0.20240417",
+    "mypy>=1.19.1",
+]
+tests = [
+    "pytest>=9.0.2",
+    "pytest-cov>=7.0.0",
+    "testcontainers>=4.13.3",
+]
+
 
 [project.scripts]
 biokb_chebi = "biokb_chebi.cli:main"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra -q --strict-markers"
+#pythonpath = ["src"]
 
 
