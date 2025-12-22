@@ -1,56 +1,19 @@
-# ALERT: Change MySQL and Neo4J passwords before use this compose file in production
-
 version: "1.0"
 name: biokb_chebi
 
 services:
-  fastapi:
-    build: 
-      context: .
-      dockerfile: Dockerfile
+  api:
+    build: .
+    container_name: biokb_chebi
     environment:
-      CONNECTION_STR: "mysql+pymysql://biokb_user:biokb_passwd@mysql:3306/biokb"
+      CONNECTION_STR: "mysql+pymysql://${MYSQL_USER}:${MYSQL_PASSWORD}@${MYSQL_HOST}:${MYSQL_PORT}/${MYSQL_DATABASE}"
+      NEO4J_URI: "bolt://${NEO4J_HOST}:${NEO4J_PORT_BOLT}"
     ports:
-      - 8080:8000
-    depends_on:
-      mysql:
-        condition: service_healthy
-
-  pma:
-    image: docker.io/phpmyadmin/phpmyadmin:5.2.1
-    ports:
-      - "8081:80"
-    environment:
-      PMA_HOST: mysql
-      PMA_PORT: 3306
-
-  mysql:
-    image: docker.io/library/mysql:8.4.0
-    ports:
-      - "3307:3306"
-    environment:
-      MYSQL_ROOT_PASSWORD: root_passwd
-      MYSQL_DATABASE: biokb
-      MYSQL_USER: biokb_user
-      MYSQL_PASSWORD: biokb_passwd
+      - ${API_PORT}:8000
     volumes:
-      - mysql:/var/lib/mysql
-    healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-proot_passwd"]
-      interval: 10s
-      retries: 5
+      - ~/.biokb/chebi:/root/.biokb/chebi
 
-  # neo4j:
-  #   image: docker.io/library/neo4j:5.20.0
-  #   ports:
-  #     - "7475:7474"
-  #     - "7688:7687"
-  #   volumes:
-  #     - neo4j_data:/data
-  #   environment:
-  #     NEO4J_AUTH: neo4j/neo4j_password
-  #     NEO4J_server_memory_heap_max__size: "4G"
-
-volumes:
-  # neo4j_data:
-  mysql:
+networks:
+  default:
+    name: biokb_network
+    external: true
