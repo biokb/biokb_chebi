@@ -1,6 +1,7 @@
-"""Main module of biokb_chebi"""
+from importlib.metadata import PackageNotFoundError, version
 
-from biokb_chebi.crud import import_all, import_mysql
-
-
-__all__ = ["import_all", "import_mysql"]
+try:
+    __version__ = version("biokb_chebi")
+except PackageNotFoundError:
+    # Package is not installed (e.g., during local development)
+    __version__ = "unknown"
