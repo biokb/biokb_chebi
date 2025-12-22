@@ -1,6 +1,6 @@
 import logging
+import os
 import zipfile
-from os import getenv, path
 from typing import LiteralString, cast
 
 from neo4j import GraphDatabase
@@ -8,7 +8,7 @@ from rdflib import Graph
 from rdflib_neo4j import HANDLE_VOCAB_URI_STRATEGY, Neo4jStore, Neo4jStoreConfig
 from tqdm import tqdm
 
-from biokb_chebi.constants.chebi import (
+from biokb_chebi.constants import (
     BASIC_NODE_LABEL,
     NEO4J_PASSWORD,
     NEO4J_URI,
@@ -31,17 +31,19 @@ class Neo4jImporter:
         neo4j_pwd: str | None = None,
     ) -> None:
 
-        self.neo4j_uri = neo4j_uri if neo4j_uri else getenv("NEO4J_URI", NEO4J_URI)
-        self.neo4j_user = neo4j_user if neo4j_user else getenv("NEO4J_USER", NEO4J_USER)
+        self.neo4j_uri = neo4j_uri if neo4j_uri else os.getenv("NEO4J_URI", NEO4J_URI)
+        self.neo4j_user = (
+            neo4j_user if neo4j_user else os.getenv("NEO4J_USER", NEO4J_USER)
+        )
         self.neo4j_pwd = (
-            neo4j_pwd if neo4j_pwd else getenv("NEO4J_PASSWORD", NEO4J_PASSWORD)
+            neo4j_pwd if neo4j_pwd else os.getenv("NEO4J_PASSWORD", NEO4J_PASSWORD)
         )
 
         self.driver = GraphDatabase.driver(
             self.neo4j_uri, auth=(self.neo4j_user, self.neo4j_pwd)
         )
 
-    def _delete_nodes_with_label(self, node_label: str = BASIC_NODE_LABEL):
+    def _delete_nodes_with_label(self, node_label: str = BASIC_NODE_LABEL) -> None:
         """Delete an existing graph in Neo4J.
 
         Args:
@@ -54,7 +56,7 @@ class Neo4jImporter:
                 WITH n
                 DETACH DELETE n
                 }} IN TRANSACTIONS OF 1000 ROWS;"""
-            cypher = cast(LiteralString, cypher)
+            cypher = cast(LiteralString, cypher)  # type: ignore
             session.run(cypher)
 
     def import_ttl(
@@ -79,18 +81,24 @@ class Neo4jImporter:
                 neo4j_db.parse(p, format="ttl")
         elif path_or_list.endswith(".ttl"):
             neo4j_db.parse(path_or_list, format="ttl")
-        elif path_or_list.endswith(".zip"):
-            self.__import_turtle_files_from_zip(path, neo4j_db)
+        elif path_or_list.endswith(".zip") and isinstance(path_or_list, str):
+            self.__import_turtle_files_from_zip(path_or_list, neo4j_db)
         neo4j_db.close(True)
 
         return True
 
-    def __import_turtle_files_from_zip(self, path_ttl_file_or_zip, neo4j_db):
+    def __import_turtle_files_from_zip(
+        self, path_ttl_file_or_zip: str, neo4j_db: Graph
+    ) -> None:
         """Import turtle files from a zip file into Neo4J.
         Args:
             path_ttl_file_or_zip (str): Path to the zip file containing turtle files.
             neo4j_db (Graph): The Neo4J Graph database connection.
         """
+        if not path_ttl_file_or_zip.endswith(".zip"):
+            raise ValueError("The provided file is not a zip file.")
+        if not os.path.exists(path_ttl_file_or_zip):
+            raise FileNotFoundError(f"The file {path_ttl_file_or_zip} does not exist.")
         with zipfile.ZipFile(path_ttl_file_or_zip, "r") as z:
             turtle_file_names = [x for x in z.namelist() if x.endswith(".ttl")]
             with tqdm(turtle_file_names) as pbar:

@@ -2,7 +2,7 @@
 
 from rdflib import Namespace
 
-from biokb_chebi.constants.chebi import BASE_URI, BIOKB_URI, CHEBI_URI
+from biokb_chebi.constants import BASE_URI, BIOKB_URI, CHEBI_URI
 
 # ChEBI URIs to Fraunhofer
 CHEBI_NS = Namespace(CHEBI_URI)
@@ -81,4 +81,10 @@ REF_NS_DICT: dict[str, Namespace] = {
     "virtual_metabolic_human": Namespace(
         "https://www.vmh.life/#metabolite/"
     ),  # database of human metabolism
+    "brenda.ligand": Namespace(
+        "https://www.brenda-enzymes.de/ligand.php?brenda_ligand_id="
+    ),  # database of enzyme ligands
+    "bindingdb": Namespace(
+        "http://www.bindingdb.org/rwd/entry/"
+    ),  # database of measured binding affinities
 }

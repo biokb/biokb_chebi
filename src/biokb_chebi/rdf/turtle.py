@@ -4,18 +4,20 @@ import logging
 import os.path
 import re
 import shutil
-from platform import node
+from collections.abc import Callable
 from typing import Optional
 
 import pandas as pd
-from pandas import DataFrame
-from rdflib import RDF, XSD, Graph, Literal, Namespace, URIRef
-from sqlalchemy import Engine, create_engine, select
+from rdflib import RDF, XSD, Graph, Literal, URIRef
+from sqlalchemy import Engine, create_engine
 from sqlalchemy.orm import sessionmaker
 from tqdm import tqdm
 
-from biokb_chebi.constants.basic import DB_DEFAULT_CONNECTION_STR, EXPORT_FOLDER
-from biokb_chebi.constants.chebi import BASIC_NODE_LABEL
+from biokb_chebi.constants import (
+    BASIC_NODE_LABEL,
+    DB_DEFAULT_CONNECTION_STR,
+    EXPORT_FOLDER,
+)
 from biokb_chebi.db import models
 from biokb_chebi.rdf import namespaces as ns
 
@@ -44,7 +46,6 @@ class TurtleCreator:
     def __init__(
         self,
         engine: Optional[Engine] = None,
-        export_to_folder: Optional[str] = None,
     ):
         """Init TurtleCreator
 
@@ -59,14 +60,14 @@ class TurtleCreator:
         connection_str = os.getenv("CONNECTION_STR", DB_DEFAULT_CONNECTION_STR)
         self.__engine = engine if engine else create_engine(str(connection_str))
         self.Session = sessionmaker(bind=self.__engine)
+        self.__ttls_folder = EXPORT_FOLDER
 
-        if export_to_folder:
-            ttls_folder = os.path.join(export_to_folder, "ttls")
-            self.__ttls_folder = ttls_folder
-        else:
-            self.__ttls_folder = EXPORT_FOLDER
-        if not os.path.exists(self.__ttls_folder):
-            os.makedirs(self.__ttls_folder)
+    def _set_ttls_folder(self, export_to_folder: str) -> None:
+        """Sets the export folder path.
+
+        This is mainly for testing purposes.
+        """
+        self.__ttls_folder = export_to_folder
 
     def create_ttls(self) -> str:
         """Create all turtle files.
@@ -74,7 +75,8 @@ class TurtleCreator:
         Returns:
             str: path zipped file with ttls.
         """
-        create_methods = [
+        os.makedirs(self.__ttls_folder, exist_ok=True)
+        create_methods: list[Callable[[], str | list[str]]] = [
             self.create_compounds_ttl,
             self.create_inchis_links_ttl,
             self.create_names_ttl,
@@ -99,14 +101,22 @@ class TurtleCreator:
         shutil.rmtree(self.__ttls_folder)
         return path_to_zip_file
 
-    def create_compounds_ttl(self) -> None:
+    def create_compounds_ttl(self) -> str:
         """Create compound turtle file."""
         ttl_path = os.path.join(self.__ttls_folder, "compound.ttl")
-        logger.info(f"Create compound ttl and save in {ttl_path}")
+        logger.info(f"Create compound ttl")
         graph = get_empty_graph()
 
         with self.Session() as session:
-            compounds = session.query(models.Compound).all()
+            compounds = session.query(
+                models.Compound.id,
+                models.Compound.ascii_name,
+                models.Compound.source,
+                models.Compound.status_id,
+                models.Compound.definition,
+                models.Compound.stars,
+                models.Compound.parent_id,
+            ).all()
             for comp in tqdm(compounds):
                 compound = ns.CHEBI_NS[str(comp.id)]
                 graph.add((compound, RDF.type, ns.NODE_NS["Compound"]))
@@ -133,16 +143,16 @@ class TurtleCreator:
                     graph.add((compound, ns.REL_NS["HAS_PARENT"], parent))
 
         graph.serialize(ttl_path, format="turtle")
-        del graph
+        return ttl_path
 
-    def create_inchis_links_ttl(self) -> None:
+    def create_inchis_links_ttl(self) -> str:
         """Create Compound/InChi links turtle file."""
         ttl_path = os.path.join(self.__ttls_folder, "inchi.ttl")
-        logger.info(f"Create InChi ttl and save in {ttl_path}")
+        logger.info(f"Create InChi ttl")
         graph = get_empty_graph()
 
         with self.Session() as session:
-            inchis: models.List[models.Structure] = (
+            inchis: list[models.Structure] = (
                 session.query(models.Structure)
                 .where(models.Structure.standard_inchi_key.isnot(None))
                 .all()
@@ -156,6 +166,7 @@ class TurtleCreator:
 
         graph.serialize(ttl_path, format="turtle")
         del graph
+        return ttl_path
 
     def create_names_ttl(self) -> str:
         """Create ChEBI name turtle file.
@@ -164,11 +175,15 @@ class TurtleCreator:
             str: Path to create turtle file.
         """
         ttl_path = os.path.join(self.__ttls_folder, "name.ttl")
-        logger.info(f"Create ChEBI names ttl and save in {ttl_path}.")
+        logger.info(f"Create ChEBI names ttl")
         graph = get_empty_graph()
 
         with self.Session() as session:
-            names = session.query(models.Name).all()
+            names = (
+                session.query(models.Name)
+                .where(models.Name.ascii_name.isnot(None))
+                .all()
+            )
 
             for name in tqdm(names):
                 node_label = "Name" + name.type.capitalize().replace(" ", "")
@@ -209,7 +224,7 @@ class TurtleCreator:
             "eccode",
         ],
         exclude: list[str] = [],
-    ):
+    ) -> list[str]:
         """Create xref turtle file.
 
         Returns:
@@ -227,7 +242,7 @@ class TurtleCreator:
                 .where(models.Reference.source_id.in_([x.id for x in sources]))
                 .all()
             )
-
+            ttl_paths: list[str] = []
             for source in sources:
                 if source.prefix not in ns.REF_NS_DICT:
                     logger.warning(
@@ -238,7 +253,7 @@ class TurtleCreator:
                     self.__ttls_folder,
                     f"{source.prefix.replace('.', '_').lower()}_xref.ttl",
                 )
-                logger.info(f"Create xref ttl and save in {ttl_path}")
+                logger.info(f"Create xref ttl")
 
                 graph = get_empty_graph()
                 graph.bind("e", ns.REF_NS_DICT[source.prefix])
@@ -254,9 +269,11 @@ class TurtleCreator:
                     node_label = "Xref" + re.sub(r"\W", "", source.prefix.capitalize())
                     graph.add((xref, RDF.type, ns.NODE_NS[node_label]))
                     graph.add((compound, ns.REL_NS["HAS_XREF"], xref))
-
-                graph.serialize(ttl_path, format="turtle")
+                ttl_paths.append(ttl_path)
+                if len(graph):
+                    graph.serialize(ttl_path, format="turtle")
                 del graph
+            return ttl_paths
 
     def create_compound_relations_ttl(self) -> str:
         """Create compound relation turtle file.
@@ -265,7 +282,7 @@ class TurtleCreator:
             str: Path to turtle file with ChEBI relations.
         """
         ttl_path = os.path.join(self.__ttls_folder, "relation.ttl")
-        logger.info(f"Create ChEBI compound relations ttl and save in {ttl_path}")
+        logger.info(f"Create ChEBI compound relations ttl")
         graph = get_empty_graph()
 
         with self.Session() as session:
@@ -273,13 +290,14 @@ class TurtleCreator:
             for rel in tqdm(relations):
                 compound_1 = URIRef(ns.CHEBI_NS[str(rel.init_id)])
                 compound_2 = URIRef(ns.CHEBI_NS[str(rel.final_id)])
-                graph.add(
-                    (
-                        compound_1,
-                        ns.REL_NS[str(rel.relation_type.code).upper()],
-                        compound_2,
+                if rel.relation_type:
+                    graph.add(
+                        (
+                            compound_1,
+                            ns.REL_NS[str(rel.relation_type.code).upper()],
+                            compound_2,
+                        )
                     )
-                )
 
         graph.serialize(ttl_path, format="turtle")
         del graph
