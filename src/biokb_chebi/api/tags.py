@@ -13,3 +13,7 @@ class Tag(StrEnum):
     RELATION = "Relation"
     REFERENCE = "Reference"
     STRUCTURE = "Structure"
+    SOURCE = "Source"
+    RELATION_TYPE = "Relation Type"
+    STATUS = "Status"
+    CHEBI = "ChEBI"
