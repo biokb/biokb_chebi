@@ -1,14 +1,7 @@
-# Use a Python image that supports PDM
-FROM python:3.12
-
-# Set the working directory inside the container
+FROM python:3.13
 WORKDIR /code
-
-# Copy code
 COPY src ./src/
 COPY pyproject.toml README.md ./
-
 RUN pip install .
-
-# Start fastapi server
+RUN mkdir -p /root/.biokb/chebi
 CMD ["fastapi", "run","src/biokb_chebi/api/main.py"]
