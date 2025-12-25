@@ -164,3 +164,4 @@ tests/data/ttls.zip
 .ruff_cache
 uv.lock
 tests/dbs/test.db
+.github/workflows/pypi-publish.yml
