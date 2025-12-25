@@ -1,0 +1,12 @@
+site_name: BioKB ChEBI Documentation
+site_url: https://biokb-chebi.readthedocs.io/
+repo_url: https://github.com/biokb/biokb_chebi
+
+theme:
+  name: material
+
+nav:
+  - Home: index.md
+  
+# Optional but recommended for RTD
+site_url: !ENV READTHEDOCS_CANONICAL_URL
