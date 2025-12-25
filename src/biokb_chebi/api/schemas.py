@@ -1,6 +1,5 @@
 import datetime
 from typing import Optional
-from unittest.mock import Base
 
 from pydantic import BaseModel
 

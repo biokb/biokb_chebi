@@ -9,7 +9,6 @@ from fastapi import Depends, FastAPI, HTTPException, Query, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from fastapi.security import HTTPBasic, HTTPBasicCredentials
-from httpx import get
 from sqlalchemy import Engine, create_engine
 from sqlalchemy.orm import Session
 
@@ -47,16 +46,20 @@ def get_session() -> Generator[Session, None, None]:
         session.close()
 
 
+# TODO: Check if this makes still sense
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     engine = get_engine()
-    dbm = manager.DbManager(engine)
+    manager.DbManager(engine)
     yield
     # Clean up
     pass
 
 
-description = """A RESTful API for BioKB-ChEBI. This is not an official ChEBI API. Please refer to [EBI for official ChEBI services](https://www.ebi.ac.uk/chebi/)"""
+description = (
+    "A RESTful API for BioKB-ChEBI. This is not an official ChEBI API."
+    " Please refer to [EBI for official ChEBI services](https://www.ebi.ac.uk/chebi/)"
+)
 
 app = FastAPI(
     title="RESTful API for BioKB-ChEBI.",
@@ -109,11 +112,17 @@ async def import_data(
     credentials: HTTPBasicCredentials = Depends(verify_credentials),
     force_download: bool = Query(
         False,
-        description="Whether to re-download data files even if they already exist, ensuring the newest version.",
+        description=(
+            "Whether to re-download data files even if they already exist,"
+            " ensuring the newest version."
+        ),
     ),
     keep_files: bool = Query(
         True,
-        description="Whether to keep the downloaded files after importing them into the database.",
+        description=(
+            "Whether to keep the downloaded files"
+            " after importing them into the database."
+        ),
     ),
 ) -> dict[str, int]:
     """Download data (if not exists) and load in database.
@@ -165,7 +174,10 @@ async def import_neo4j(
         if not os.path.exists(constants.ZIPPED_TTLS_PATH):
             raise HTTPException(
                 status_code=status.HTTP_405_METHOD_NOT_ALLOWED,
-                detail="Zipped TTL files not found. Please generate them first using /export_ttls/ endpoint.",
+                detail=(
+                    "Zipped TTL files not found. Please "
+                    "generate them first using /export_ttls/ endpoint."
+                ),
             )
         importer = Neo4jImporter()
         importer.import_ttls()
