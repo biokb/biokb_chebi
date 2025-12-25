@@ -3,9 +3,13 @@ import os
 import zipfile
 from typing import LiteralString, cast
 
-from neo4j import GraphDatabase
+from neo4j import Driver, GraphDatabase
 from rdflib import Graph
-from rdflib_neo4j import HANDLE_VOCAB_URI_STRATEGY, Neo4jStore, Neo4jStoreConfig
+from rdflib_neo4j import (  # type: ignore
+    HANDLE_VOCAB_URI_STRATEGY,
+    Neo4jStore,
+    Neo4jStoreConfig,
+)
 from tqdm import tqdm
 
 from biokb_chebi.constants import (
@@ -30,7 +34,14 @@ class Neo4jImporter:
         neo4j_user: str | None = None,
         neo4j_pwd: str | None = None,
     ) -> None:
-
+        """Initialize Neo4jImporter with connection to Neo4j.
+        Args:
+            neo4j_uri (str | None): URI of the Neo4j database.
+            neo4j_user (str | None): Username for Neo4j.
+            neo4j_pwd (str | None): Password for Neo4j.
+            driver (Driver | None): Neo4j Driver instance. If provided,
+                                    it will be used instead of creating a new one.
+        """
         self.neo4j_uri = neo4j_uri if neo4j_uri else os.getenv("NEO4J_URI", NEO4J_URI)
         self.neo4j_user = (
             neo4j_user if neo4j_user else os.getenv("NEO4J_USER", NEO4J_USER)
@@ -38,10 +49,11 @@ class Neo4jImporter:
         self.neo4j_pwd = (
             neo4j_pwd if neo4j_pwd else os.getenv("NEO4J_PASSWORD", NEO4J_PASSWORD)
         )
-
-        self.driver = GraphDatabase.driver(
+        self.driver: Driver = GraphDatabase.driver(
             self.neo4j_uri, auth=(self.neo4j_user, self.neo4j_pwd)
         )
+        self.__zipped_ttls_path = ZIPPED_TTLS_PATH
+        self.driver.verify_connectivity()
 
     def _delete_nodes_with_label(self, node_label: str = BASIC_NODE_LABEL) -> None:
         """Delete an existing graph in Neo4J.
@@ -59,53 +71,44 @@ class Neo4jImporter:
             cypher = cast(LiteralString, cypher)  # type: ignore
             session.run(cypher)
 
-    def import_ttl(
-        self, path_or_list: str | list[str], delete_nodes_label: str | None = None
-    ) -> bool:
-        """Import single turtle file in Neo4J.
+    def _set_test_driver(self, driver: Driver) -> None:
+        """Overwrite the Neo4j driver. Mainly for testing purposes.
 
         Args:
-            path_or_list (str | list[str]): Path to the turtle file, list of files, or zip file.
-            delete_nodes_label (str | None): If provided, delete nodes with this label before import.
-
-        Returns:
-            bool: True if import is successful.
+            driver (Driver): The Neo4j Driver instance to set.
         """
-        logger.info("Start importing all turtle file in Neo4J.")
-        if delete_nodes_label:
-            self._delete_nodes_with_label(node_label=delete_nodes_label)
-        neo4j_db = self.__get_neo4j_db()
+        self.driver = driver
 
-        if isinstance(path_or_list, list):
-            for p in path_or_list:
-                neo4j_db.parse(p, format="ttl")
-        elif path_or_list.endswith(".ttl"):
-            neo4j_db.parse(path_or_list, format="ttl")
-        elif path_or_list.endswith(".zip") and isinstance(path_or_list, str):
-            self.__import_turtle_files_from_zip(path_or_list, neo4j_db)
-        neo4j_db.close(True)
+    def _set_test_zipped_ttls_path(self, path: str) -> None:
+        """Overwrite the zipped ttls path. Mainly for testing purposes.
 
-        return True
+        Args:
+            path (str): The path to the zipped turtle files.
+        """
+        self.__zipped_ttls_path = path
 
-    def __import_turtle_files_from_zip(
-        self, path_ttl_file_or_zip: str, neo4j_db: Graph
-    ) -> None:
+    def __import_turtle_files_from_zip(self) -> None:
         """Import turtle files from a zip file into Neo4J.
         Args:
-            path_ttl_file_or_zip (str): Path to the zip file containing turtle files.
             neo4j_db (Graph): The Neo4J Graph database connection.
         """
-        if not path_ttl_file_or_zip.endswith(".zip"):
+        if not self.__zipped_ttls_path.endswith(".zip"):
             raise ValueError("The provided file is not a zip file.")
-        if not os.path.exists(path_ttl_file_or_zip):
-            raise FileNotFoundError(f"The file {path_ttl_file_or_zip} does not exist.")
-        with zipfile.ZipFile(path_ttl_file_or_zip, "r") as z:
+        if not os.path.exists(self.__zipped_ttls_path):
+            raise FileNotFoundError(
+                f"The file {self.__zipped_ttls_path} does not exist."
+            )
+
+        neo4j_db = self.__get_neo4j_db()
+        with zipfile.ZipFile(self.__zipped_ttls_path, "r") as z:
             turtle_file_names = [x for x in z.namelist() if x.endswith(".ttl")]
             with tqdm(turtle_file_names) as pbar:
                 for turtle_file_name in pbar:
                     pbar.set_description(f"Processing {turtle_file_name}")
                     with z.open(turtle_file_name) as file_io:
                         neo4j_db.parse(file_io, format="ttl")
+                        neo4j_db.commit()
+        neo4j_db.close()
 
     def __get_neo4j_db(self) -> Graph:
         """Get the Neo4j Graph database connection."""
@@ -115,7 +118,6 @@ class Neo4jImporter:
                 "FOR (r:Resource) REQUIRE r.uri IS UNIQUE"
             )
             session.run(cypher)
-            self.driver.close()
 
         auth_data = {
             "uri": self.neo4j_uri,
@@ -138,16 +140,14 @@ class Neo4jImporter:
         """Import all turtle file in Neo4J from zipped turtle files.
 
         Args:
-            delete_existing_graph (bool): Whether to delete existing graph before import.
+            delete_existing_graph (bool): delete existing graph before import.
         Returns:
             bool: True if import is successful."""
         logger.info("Start importing all turtle file in Neo4J.")
 
         if delete_existing_graph:
             self._delete_nodes_with_label()
-        neo4j_db = self.__get_neo4j_db()
 
-        self.__import_turtle_files_from_zip(ZIPPED_TTLS_PATH, neo4j_db)
-        neo4j_db.close(True)
+        self.__import_turtle_files_from_zip()
 
         return True

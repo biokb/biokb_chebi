@@ -104,7 +104,7 @@ class TurtleCreator:
     def create_compounds_ttl(self) -> str:
         """Create compound turtle file."""
         ttl_path = os.path.join(self.__ttls_folder, "compound.ttl")
-        logger.info(f"Create compound ttl")
+        logger.info("Create compound ttl")
         graph = get_empty_graph()
 
         with self.Session() as session:
@@ -148,7 +148,7 @@ class TurtleCreator:
     def create_inchis_links_ttl(self) -> str:
         """Create Compound/InChi links turtle file."""
         ttl_path = os.path.join(self.__ttls_folder, "inchi.ttl")
-        logger.info(f"Create InChi ttl")
+        logger.info("Create InChi ttl")
         graph = get_empty_graph()
 
         with self.Session() as session:
@@ -175,7 +175,7 @@ class TurtleCreator:
             str: Path to create turtle file.
         """
         ttl_path = os.path.join(self.__ttls_folder, "name.ttl")
-        logger.info(f"Create ChEBI names ttl")
+        logger.info("Create ChEBI names ttl")
         graph = get_empty_graph()
 
         with self.Session() as session:
@@ -231,7 +231,7 @@ class TurtleCreator:
             str: Path to turtle file with xref links.
         """
         with self.Session() as session:
-            sources = session.query(models.Source).all()
+            sources: list[models.Source] = session.query(models.Source).all()
             if include:
                 sources = [source for source in sources if source.prefix in include]
             if exclude:
@@ -253,7 +253,7 @@ class TurtleCreator:
                     self.__ttls_folder,
                     f"{source.prefix.replace('.', '_').lower()}_xref.ttl",
                 )
-                logger.info(f"Create xref ttl")
+                logger.info(f"Create {source.name} xref ttl")
 
                 graph = get_empty_graph()
                 graph.bind("e", ns.REF_NS_DICT[source.prefix])
@@ -282,7 +282,7 @@ class TurtleCreator:
             str: Path to turtle file with ChEBI relations.
         """
         ttl_path = os.path.join(self.__ttls_folder, "relation.ttl")
-        logger.info(f"Create ChEBI compound relations ttl")
+        logger.info("Create ChEBI compound relations ttl")
         graph = get_empty_graph()
 
         with self.Session() as session:

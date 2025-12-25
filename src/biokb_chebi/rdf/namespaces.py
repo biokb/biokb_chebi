@@ -19,20 +19,21 @@ GO_NS = Namespace("http://purl.obolibrary.org/obo/GO_")
 REF_NS_DICT: dict[str, Namespace] = {
     "biomodels.db": Namespace(
         "https://www.ebi.ac.uk/biomodels/"
-    ),  # database for published quantitative kinetic models of biochemical and cellular systems
+    ),  # db quantitative kinetic models of biochemical and cellular systems
     "carotenoids_database": Namespace(
         "http://carotenoiddb.jp/Entries/"
-    ),  # database of carotenoids
+    ),  # db of carotenoids
     "chembl": Namespace(
         "https://www.ebi.ac.uk/chembl/id_lookup/"
-    ),  # database of bioactive drug-like small molecules
+    ),  # db of bioactive drug-like small molecules
     "comptox": Namespace(
         "https://comptox.epa.gov/dashboard/chemical/details/"
-    ),  # database of environmental chemicals
+    ),  # db of environmental chemicals
     "eccode": Namespace(
         "https://www.brenda-enzymes.org/enzyme.php?ecno="
-    ),  # database of enzyme nomenclature
-    "go": Namespace("https://amigo.geneontology.org/amigo/term/"),  # Gene Ontology
+    ),  # db of enzyme nomenclature
+    # Gene Ontology
+    "go": Namespace("https://amigo.geneontology.org/amigo/term/"),
     "gxa.expt": Namespace(
         "https://www.ebi.ac.uk/gxa/experiments/"
     ),  # Gene Expression Atlas experiments
@@ -41,10 +42,11 @@ REF_NS_DICT: dict[str, Namespace] = {
     ),  # molecular interaction database
     "metabolights": Namespace(
         "https://www.ebi.ac.uk/metabolights/editor/"
-    ),  # database for metabolomics experiments and derived information
+    ),  # db for metabolomics experiments and derived information
     "nmrshiftdb2": Namespace(
-        "https://nmrshiftdb.nmr.uni-koeln.de/portal/js_pane/P-Results/nmrshiftdbaction/showDetailsFromHome/molNumber/"
-    ),  # database for organic structures and their NMR data
+        "https://nmrshiftdb.nmr.uni-koeln.de/portal/js_pane/P-Results/"
+        "nmrshiftdbaction/showDetailsFromHome/molNumber/"
+    ),  # db for organic structures and their NMR data
     "patent": Namespace(
         "https://worldwide.espacenet.com/patent/search?q="
     ),  # patent database
@@ -53,38 +55,34 @@ REF_NS_DICT: dict[str, Namespace] = {
     ),  # Protein Data Bank, 3d structures of proteins and nucleic acids
     "pubchem.compound": Namespace(
         "https://pubchem.ncbi.nlm.nih.gov/compound/"
-    ),  # database of chemical molecules and their activities
+    ),  # db of chemical molecules and their activities
     "pubchem.substance": Namespace(
         "https://pubchem.ncbi.nlm.nih.gov/substance/"
-    ),  # database of chemical substances
+    ),  # db of chemical substances
     "reactome": Namespace(
         "https://reactome.org/content/detail/"
-    ),  # database of biological pathways
-    "rhea": Namespace(
-        "https://www.rhea-db.org/rhea/"
-    ),  # database of biochemical reactions
+    ),  # db of biological pathways
+    "rhea": Namespace("https://www.rhea-db.org/rhea/"),  # db of biochemical reactions
     "sabiork.reaction": Namespace(
         "https://sabiork.h-its.org/reacdetails.jsp?reactid="
-    ),  # database of kinetic data of biochemical reactions
-    "slm": Namespace(
-        "https://www.swisslipids.org/#/entity/"
-    ),  # database of lipid structures
+    ),  # db of kinetic data of biochemical reactions
+    "slm": Namespace("https://www.swisslipids.org/#/entity/"),  # db of lipid structures
     "spp": Namespace(
         "http://www.signalingpathways.org/datasets/dataset.jsf?doi="
     ),  # signaling pathways database
     "surechembl": Namespace(
         "https://www.surechembl.org/chemical/"
-    ),  # database of compounds with bioactivity data
+    ),  # db of compounds with bioactivity data
     "uniprot": Namespace(
         "http://www.uniprot.org/entry/*"
     ),  # universal protein resource
     "virtual_metabolic_human": Namespace(
         "https://www.vmh.life/#metabolite/"
-    ),  # database of human metabolism
+    ),  # db of human metabolism
     "brenda.ligand": Namespace(
         "https://www.brenda-enzymes.de/ligand.php?brenda_ligand_id="
-    ),  # database of enzyme ligands
+    ),  # db of enzyme ligands
     "bindingdb": Namespace(
         "http://www.bindingdb.org/rwd/entry/"
-    ),  # database of measured binding affinities
+    ),  # db of measured binding affinities
 }
