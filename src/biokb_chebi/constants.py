@@ -1,9 +1,6 @@
 import os
 from pathlib import Path
 
-from fastapi.background import P
-
-
 # standard for all biokb projects, but individual set
 PROJECT_NAME = "chebi"
 BASIC_NODE_LABEL = "DbChEBI"
@@ -24,7 +21,7 @@ NEO4J_USER = "neo4j"
 LOGS_FOLDER = os.path.join(DATA_FOLDER, "logs")  # where to store log files
 TABLE_PREFIX = f"{PROJECT_NAME}_"
 os.makedirs(DATA_FOLDER, exist_ok=True)
-    
+
 # not standard for all biokb projects
 
 BASE_URL_DOWNLOAD = "https://ftp.ebi.ac.uk/pub/databases/chebi/flat_files"
