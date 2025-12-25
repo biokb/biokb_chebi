@@ -1,0 +1,1 @@
+mkdocs-material # needed for documentation site generation with MkDocs and readthedocs.io
