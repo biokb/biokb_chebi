@@ -214,7 +214,6 @@ class Relation(Base):
         "mysql_charset": "utf8",
         "mysql_collate": "utf8_unicode_ci",
     }
-    # id	relation_type_id	init_id	final_id	status_id	evidence_accession	evidence_source_id
     id: Mapped[int] = mapped_column(primary_key=True)
     evidence_accession: Mapped[Optional[str]] = mapped_column(String(7))
 

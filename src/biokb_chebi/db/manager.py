@@ -8,6 +8,7 @@ import pandas as pd
 import requests
 from sqlalchemy import Engine, create_engine
 from sqlalchemy.orm import sessionmaker
+from sqlalchemy.orm.session import Session
 from tqdm import tqdm
 
 from biokb_chebi.constants import (
@@ -59,21 +60,22 @@ class DbManager:
         """Init DatabaseImporter
 
         Args:
-            data_folder_path (Optional[str], optional): Folder where to store download files. Defaults to None.
-            engine (Optional[Engine], optional): SQLAlchemy engine. Defaults to None.
-            redownload (bool): True if the data should be downaloded even if they already exists. Default False.
+            data_folder_path (Optional[str]): Folder downloadfiles. Defaults to None.
+            engine (Optional[Engine]): SQLAlchemy engine. Defaults to None.
+            redownload (bool): True if the data should be downloaded
+                               even if they already exists. Default False.
         """
-        self.__data_folder = DATA_FOLDER
-        connection_str = os.getenv("CONNECTION_STR", DB_DEFAULT_CONNECTION_STR)
-        self.__engine = engine if engine else create_engine(str(connection_str))
-        self.Session = sessionmaker(bind=self.__engine)
+        self.__data_folder: str = DATA_FOLDER
+        connection_str: str = os.getenv("CONNECTION_STR", DB_DEFAULT_CONNECTION_STR)
+        self.__engine: Engine = engine if engine else create_engine(str(connection_str))
+        self.Session: sessionmaker[Session] = sessionmaker(bind=self.__engine)
 
     def _set_data_folder(self, data_folder: str) -> None:
         """Sets the data folder path.
 
         This is mainly for testing purposes.
         """
-        self.__data_folder: str = data_folder
+        self.__data_folder = data_folder
 
     def __create_empty_db(self) -> None:
         """Creates an empty database by delete the old and recreate a new."""
@@ -106,8 +108,8 @@ class DbManager:
 
         Args:
             redownload (bool, optional): If True, will force download the data, even if
-            files already exist. If False, it will skip the downloading part if files already
-            exist locally. Defaults to False.
+            files already exist. If False, it will skip the downloading part if files
+            already exist locally. Defaults to False.
         """
         logger.info("Start download of data")
         files_exists = 0
@@ -133,7 +135,7 @@ class DbManager:
         """Insert data in chebi db tables.
 
         Returns:
-            Dict[str, int]: Dictionary with table as key and number of inserted rows as value
+            Dict[str, int]: table=key and number of inserted=value
         """
         logger.info("Insert data in database")
 
