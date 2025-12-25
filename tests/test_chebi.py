@@ -1,4 +1,3 @@
-# TODO: Only runs in the moment with podman, not prepared for docker yet.
 import logging
 import shutil
 import subprocess
