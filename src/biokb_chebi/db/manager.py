@@ -91,7 +91,7 @@ class DbManager:
             bool: Returns True
         """
         # Always remove a log if a new import starts
-        print(self.__data_folder)
+        logger.info("Data folder: %s", self.__data_folder)
         self.__download_data(force_download=force_download)
         self.__create_empty_db()
         result_dict = self.__insert_data()
@@ -176,3 +176,35 @@ class DbManager:
                 inserted[table_name] += df.shape[0]
 
         return inserted
+
+
+def import_data(
+    engine: Optional[Engine] = None,
+    force_download: bool = False,
+    keep_files: bool = False,
+) -> Dict[str, int]:
+    """Import all data in database.
+
+    Args:
+        engine (Optional[Engine]): SQLAlchemy engine. Defaults to None.
+        force_download (bool, optional): If True, will force download the data, even if
+            files already exist. If False, it will skip the downloading part if files
+            already exist locally. Defaults to False.
+        keep_files (bool, optional): If True, downloaded files are kept after import.
+            Defaults to False.
+
+    Returns:
+        Dict[str, int]: table=key and number of inserted=value
+    """
+    db_manager = DbManager(engine)
+    return db_manager.import_data(force_download=force_download, keep_files=keep_files)
+
+
+def get_session(engine: Optional[Engine] = None) -> Session:
+    """Get a new SQLAlchemy session.
+
+    Returns:
+        Session: SQLAlchemy session
+    """
+    db_manager = DbManager(engine)
+    return db_manager.Session()
