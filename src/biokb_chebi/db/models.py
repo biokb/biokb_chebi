@@ -71,6 +71,13 @@ class Compound(Base):
     references: Mapped[List["Reference"]] = relationship(back_populates="compound")
     structures: Mapped[List["Structure"]] = relationship(back_populates="compound")
 
+    def __repr__(self) -> str:
+        """String representation of the Compound object."""
+        return (
+            f"<Compound(id={self.id!r}, chebi_accession={self.chebi_accession!r},"
+            f" name={self.name!r})>"
+        )
+
 
 class ChemicalData(Base):
     """Class definition for the chebi_chemical_data table."""
@@ -105,6 +112,13 @@ class ChemicalData(Base):
     )
     compound: Mapped[Compound] = relationship(back_populates="chemical_data")
 
+    def __repr__(self) -> str:
+        """String representation of the ChemicalData object."""
+        return (
+            f"<ChemicalData(id={self.id!r}, formula={self.formula!r},"
+            f" mass={self.mass!r}, charge={self.charge!r})>"
+        )
+
 
 class Comment(Base):
     """Class definition for the chebi_comment table."""
@@ -131,6 +145,10 @@ class Comment(Base):
     compound: Mapped[Compound] = relationship(back_populates="comments")
     status: Mapped["Status"] = relationship(back_populates="comments")
 
+    def __repr__(self) -> str:
+        """String representation of the Comment object."""
+        return f"<Comment(id={self.id!r}, datatype={self.datatype!r}, comment={self.comment!r})>"
+
 
 class DatabaseAccession(Base):
     """Class definition for the chebi_database_accession table."""
@@ -156,6 +174,13 @@ class DatabaseAccession(Base):
     status: Mapped["Status"] = relationship(back_populates="database_accessions")
     source: Mapped["Source"] = relationship(back_populates="database_accessions")
     compound: Mapped[Compound] = relationship(back_populates="database_accessions")
+
+    def __repr__(self) -> str:
+        """String representation of the DatabaseAccession object."""
+        return (
+            f"<DatabaseAccession(id={self.id!r}, type={self.type!r},"
+            f" accession_number={self.accession_number!r})>"
+        )
 
 
 class Name(Base):
@@ -184,6 +209,10 @@ class Name(Base):
     compound: Mapped[Compound] = relationship(back_populates="names")
     status: Mapped["Status"] = relationship(back_populates="names")
 
+    def __repr__(self) -> str:
+        """String representation of the Name object."""
+        return f"<Name(id={self.id!r}, type='{self.type!r}'," f" name='{self.name!r}')>"
+
 
 class RelationType(Base):
     """Class definition for the chebi_relation_type table."""
@@ -203,6 +232,10 @@ class RelationType(Base):
 
     # relationships
     relations: Mapped[List["Relation"]] = relationship(back_populates="relation_type")
+
+    def __repr__(self) -> str:
+        """String representation of the RelationType object."""
+        return f"<RelationType(id={self.id!r}, code='{self.code!r}')>"
 
 
 class Relation(Base):
@@ -239,6 +272,13 @@ class Relation(Base):
         back_populates="relations"
     )
 
+    def __repr__(self) -> str:
+        """String representation of the Relation object."""
+        return (
+            f"<Relation(id={self.id!r}, init_id={self.init_id!r},"
+            f" final_id={self.final_id!r}, relation_type_id={self.relation_type_id!r})>"
+        )
+
 
 class Reference(Base):
     """Class definition for the chebi_reference table."""
@@ -261,6 +301,13 @@ class Reference(Base):
     # relationships
     source: Mapped["Source"] = relationship(back_populates="references")
     compound: Mapped[Compound] = relationship(back_populates="references")
+
+    def __repr__(self) -> str:
+        """String representation of the Reference object."""
+        return (
+            f"<Reference(id={self.id!r}, accession_number='{self.accession_number!r}',"
+            f" reference_name='{self.reference_name!r}')>"
+        )
 
 
 class Structure(Base):
@@ -293,6 +340,13 @@ class Structure(Base):
 
     # molefile: Mapped[Optional[str]] = mapped_column(Text)  # currently unused
 
+    def __repr__(self) -> str:
+        """String representation of the Structure object."""
+        return (
+            f"<Structure(id={self.id!r}, standard_inchi_key='{self.standard_inchi_key!r}',"
+            f" dimension='{self.dimension!r}')>"
+        )
+
 
 class Source(Base):
     """Class definition for the chebi_source table."""
@@ -317,6 +371,12 @@ class Source(Base):
     database_accessions: Mapped[List[DatabaseAccession]] = relationship(
         back_populates="source"
     )
+
+    def __repr__(self) -> str:
+        """String representation of the Source object."""
+        return (
+            f"<Source(id={self.id!r}, name='{self.name!r}', prefix='{self.prefix!r}')>"
+        )
 
 
 class Status(Base):
@@ -344,3 +404,7 @@ class Status(Base):
     )
     comments: Mapped[List[Comment]] = relationship(back_populates="status")
     structures: Mapped[List[Structure]] = relationship(back_populates="status")
+
+    def __repr__(self) -> str:
+        """String representation of the Status object."""
+        return f"<Status(id={self.id!r}, name='{self.name!r}')>"
