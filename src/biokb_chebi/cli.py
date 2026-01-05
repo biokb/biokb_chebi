@@ -1,3 +1,5 @@
+import os
+
 import click
 from sqlalchemy import create_engine
 
@@ -72,8 +74,15 @@ def create_ttls(connection_string: str) -> None:
 
 
 @main.command("import-neo4j")
-@click.option("--uri", "-i", default="bolt://localhost:7687", help="Neo4j database URI")
-@click.option("--user", "-u", default=NEO4J_USER, help="Neo4j username")
+@click.option(
+    "--uri",
+    "-i",
+    default="bolt://localhost:7687",
+    help='Neo4j database URI (default="bolt://localhost:7687")',
+)
+@click.option(
+    "--user", "-u", default=NEO4J_USER, help='Neo4j username (default="neo4j")'
+)
 @click.option("--password", "-p", required=True, help="Neo4j password")
 def import_neo4j(uri: str, user: str, password: str) -> None:
     """Import TTL files into Neo4j database."""
@@ -84,9 +93,15 @@ def import_neo4j(uri: str, user: str, password: str) -> None:
 @click.option(
     "--host", "-h", default="0.0.0.0", help="API server host (default: 0.0.0.0)"
 )
-@click.option("--port", "-p", default=8000, help="API server port (default: 8000)")
-def run_api(host: str, port: int) -> None:
+@click.option("--port", "-P", default=8000, help="API server port (default: 8000)")
+@click.option("--user", "-u", default="admin", help="API username (default=admin)")
+@click.option("--password", "-p", default="admin", help="API password (default: admin)")
+def run_api(host: str, port: int, user: str, password: str) -> None:
     """Run the CLI."""
+    # set env variables for API authentication
+    os.environ["API_USER"] = user
+    os.environ["API_PASSWORD"] = password
+    click.echo(f"API server running at http://{host}:{port}/docs#/")
     run_server(host=host, port=port)
 
 
