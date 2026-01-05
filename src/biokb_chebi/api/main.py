@@ -16,7 +16,12 @@ from biokb_chebi import constants
 from biokb_chebi.api import schemas
 from biokb_chebi.api.query_tools import SASearchResults, build_dynamic_query
 from biokb_chebi.api.tags import Tag
-from biokb_chebi.constants import DB_DEFAULT_CONNECTION_STR
+from biokb_chebi.constants import (
+    DB_DEFAULT_CONNECTION_STR,
+    NEO4J_PASSWORD,
+    NEO4J_URI,
+    NEO4J_USER,
+)
 from biokb_chebi.db import manager, models
 from biokb_chebi.rdf.neo4j_importer import Neo4jImporter
 from biokb_chebi.rdf.turtle import TurtleCreator
@@ -168,6 +173,21 @@ async def get_report(
 @app.get("/import_neo4j/", tags=[Tag.DBMANAGE])
 async def import_neo4j(
     credentials: HTTPBasicCredentials = Depends(verify_credentials),
+    uri: str | None = Query(
+        NEO4J_URI,
+        description="The Neo4j URI. If not provided, "
+        "the default from environment variable is used.",
+    ),
+    user: str | None = Query(
+        NEO4J_USER,
+        description="The Neo4j user. If not provided,"
+        " the default from environment variable is used.",
+    ),
+    password: str | None = Query(
+        NEO4J_PASSWORD,
+        description="The Neo4j password. If not provided,"
+        " the default from environment variable is used.",
+    ),
 ) -> dict[str, str]:
     """Import RDF turtle files in Neo4j."""
     try:
@@ -179,7 +199,7 @@ async def import_neo4j(
                     "generate them first using /export_ttls/ endpoint."
                 ),
             )
-        importer = Neo4jImporter()
+        importer = Neo4jImporter(neo4j_uri=uri, neo4j_user=user, neo4j_pwd=password)
         importer.import_ttls()
     except Exception as e:
         logger.error(f"Error importing data into Neo4j: {e}")
