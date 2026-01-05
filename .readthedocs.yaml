@@ -1,16 +1,14 @@
 version: 2
 
-mkdocs:
-  configuration: mkdocs.yml
-
-python:
-  install:
-    - method: pip
-      path: .
-      extra_requirements:
-        - readthedocs
-
 build:
   os: ubuntu-22.04
   tools:
-    python: "3.12"
+    python: "3.11"
+  jobs:
+    # Use 'pip install' with the --group flag (supported in modern pip)
+    install:
+      - pip install .
+      - pip install --group readthedocs
+
+mkdocs:
+  configuration: mkdocs.yml
