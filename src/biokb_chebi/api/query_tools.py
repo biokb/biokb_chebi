@@ -38,7 +38,7 @@ logger = logging.getLogger(__name__)
 def build_dynamic_query(
     search_obj: BaseModel,
     model_cls: QueryModels,
-    db: Session,
+    session: Session,
     limit: Optional[int] = None,  # default limit for pagination
     offset: Optional[int] = None,  # default offset for pagination
 ) -> SASearchResults | dict[str, str]:
@@ -46,7 +46,7 @@ def build_dynamic_query(
         return _build_dynamic_query(
             search_obj=search_obj,
             model_cls=model_cls,
-            db=db,
+            session=session,
             limit=limit,
             offset=offset,
         )
@@ -58,7 +58,7 @@ def build_dynamic_query(
 def _build_dynamic_query(
     search_obj: BaseModel,
     model_cls: QueryModels,
-    db: Session,
+    session: Session,
     limit: Optional[int] = None,  # default limit for pagination
     offset: Optional[int] = None,  # default offset for pagination
 ) -> SASearchResults:
@@ -119,7 +119,7 @@ def _build_dynamic_query(
     stmt = select(model_cls).where(*filters)
 
     count_stmt = select(func.count()).select_from(model_cls).where(*filters)
-    total_count = db.execute(count_stmt).scalar()
+    total_count = session.execute(count_stmt).scalar()
 
     if limit is not None:
         stmt = stmt.limit(limit)
@@ -132,5 +132,5 @@ def _build_dynamic_query(
         "count": total_count,
         "limit": limit,
         "offset": offset,
-        "results": db.execute(stmt).scalars().all(),
+        "results": session.execute(stmt).scalars().all(),
     }

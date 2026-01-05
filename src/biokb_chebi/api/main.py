@@ -46,13 +46,13 @@ def get_session() -> Generator[Session, None, None]:
         session.close()
 
 
-# TODO: Check if this makes still sense
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
+    """Initialize app resources on startup and cleanup on shutdown."""
     engine = get_engine()
     manager.DbManager(engine)
     yield
-    # Clean up
+    # Clean up resources if needed
     pass
 
 
@@ -207,7 +207,7 @@ async def search_compounds(
     return build_dynamic_query(
         search_obj=search,
         model_cls=models.Compound,
-        db=session,
+        session=session,
         limit=limit,
         offset=offset,
     )
@@ -239,7 +239,7 @@ async def search_chemical_data(
     return build_dynamic_query(
         search_obj=search,
         model_cls=models.ChemicalData,
-        db=session,
+        session=session,
         limit=limit,
         offset=offset,
     )
@@ -264,7 +264,7 @@ async def search_database_accession(
     return build_dynamic_query(
         search_obj=search,
         model_cls=models.DatabaseAccession,
-        db=session,
+        session=session,
         limit=limit,
         offset=offset,
     )
@@ -287,7 +287,7 @@ async def search_name(
     return build_dynamic_query(
         search_obj=search,
         model_cls=models.Name,
-        db=session,
+        session=session,
         limit=limit,
         offset=offset,
     )
@@ -312,7 +312,7 @@ async def search_relation_type(
     return build_dynamic_query(
         search_obj=search,
         model_cls=models.RelationType,
-        db=session,
+        session=session,
         limit=limit,
         offset=offset,
     )
@@ -337,7 +337,7 @@ async def search_relation(
     return build_dynamic_query(
         search_obj=search,
         model_cls=models.Relation,
-        db=session,
+        session=session,
         limit=limit,
         offset=offset,
     )
@@ -360,7 +360,7 @@ async def search_reference(
     return build_dynamic_query(
         search_obj=search,
         model_cls=models.Reference,
-        db=session,
+        session=session,
         limit=limit,
         offset=offset,
     )
@@ -383,7 +383,7 @@ async def search_source(
     return build_dynamic_query(
         search_obj=search,
         model_cls=models.Source,
-        db=session,
+        session=session,
         limit=limit,
         offset=offset,
     )
@@ -406,7 +406,7 @@ async def search_status(
     return build_dynamic_query(
         search_obj=search,
         model_cls=models.Status,
-        db=session,
+        session=session,
         limit=limit,
         offset=offset,
     )
@@ -429,7 +429,7 @@ async def search_structure(
     return build_dynamic_query(
         search_obj=search,
         model_cls=models.Structure,
-        db=session,
+        session=session,
         limit=limit,
         offset=offset,
     )
