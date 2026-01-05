@@ -1,5 +1,5 @@
 [project]
-name = "biokb_chebi"
+name = "biokb-chebi"
 version = "0.1.0"
 description = "A Python package to import ChEBI data in MySQL and Neo4J"
 authors = [
@@ -9,18 +9,19 @@ dependencies = [
     "sqlalchemy>=2.0.30",
     "pymysql>=1.1.0",
     "pandas>=2.2.2",
+    "neo4j>=5.0.0",
     "rdflib-neo4j>=1.0",
     "cryptography>=42.0.7",
     "click>=8.1.7",
     "tqdm>=4.66.4",
+    "pydantic>=2.0.0",
     "fastapi[standard]>=0.115.14",
     "requests>=2.32.5",
 ]
-requires-python = ">=3.10"
+requires-python = ">=3.11"
 classifiers = [
     "Development Status :: 3 - Alpha",
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
@@ -43,6 +44,7 @@ build-backend = "hatchling.build"
 [dependency-groups]
 docs = [
     "eralchemy[graphviz]>=1.5.0",
+    "mkdocs-jupyter>=0.25.1",
     "mkdocs-material>=9.7.1",
 ]
 dev = [
