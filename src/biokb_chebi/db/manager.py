@@ -70,6 +70,15 @@ class DbManager:
         self.__engine: Engine = engine if engine else create_engine(str(connection_str))
         self.Session: sessionmaker[Session] = sessionmaker(bind=self.__engine)
 
+    @property
+    def session(self) -> Session:
+        """Get a new SQLAlchemy session.
+
+        Returns:
+            Session: SQLAlchemy session
+        """
+        return self.Session()
+
     def _set_data_folder(self, data_folder: str) -> None:
         """Sets the data folder path.
 
@@ -207,4 +216,4 @@ def get_session(engine: Optional[Engine] = None) -> Session:
         Session: SQLAlchemy session
     """
     db_manager = DbManager(engine)
-    return db_manager.Session()
+    return db_manager.session
