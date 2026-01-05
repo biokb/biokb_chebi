@@ -77,18 +77,18 @@ class TurtleCreator:
         """
         os.makedirs(self.__ttls_folder, exist_ok=True)
         create_methods: list[Callable[[], str | list[str]]] = [
-            self.create_compounds_ttl,
-            self.create_inchis_links_ttl,
-            self.create_names_ttl,
-            self.create_xrefs_ttl,
-            self.create_compound_relations_ttl,
+            self.__create_compounds_ttl,
+            self.__create_inchis_links_ttl,
+            self.__create_names_ttl,
+            self.__create_xrefs_ttl,
+            self.__create_compound_relations_ttl,
         ]
         for create_method in create_methods:
             create_method()
 
-        return self.create_zip_from_all_ttls()
+        return self.__create_zip_from_all_ttls()
 
-    def create_zip_from_all_ttls(self) -> str:
+    def __create_zip_from_all_ttls(self) -> str:
         """Create a zipped file from all turtle file and return the path.
 
         Returns:
@@ -101,7 +101,7 @@ class TurtleCreator:
         shutil.rmtree(self.__ttls_folder)
         return path_to_zip_file
 
-    def create_compounds_ttl(self) -> str:
+    def __create_compounds_ttl(self) -> str:
         """Create compound turtle file."""
         ttl_path = os.path.join(self.__ttls_folder, "compound.ttl")
         logger.info("Create compound ttl")
@@ -145,7 +145,7 @@ class TurtleCreator:
         graph.serialize(ttl_path, format="turtle")
         return ttl_path
 
-    def create_inchis_links_ttl(self) -> str:
+    def __create_inchis_links_ttl(self) -> str:
         """Create Compound/InChi links turtle file."""
         ttl_path = os.path.join(self.__ttls_folder, "inchi.ttl")
         logger.info("Create InChi ttl")
@@ -168,7 +168,7 @@ class TurtleCreator:
         del graph
         return ttl_path
 
-    def create_names_ttl(self) -> str:
+    def __create_names_ttl(self) -> str:
         """Create ChEBI name turtle file.
 
         Returns:
@@ -208,7 +208,7 @@ class TurtleCreator:
         del graph
         return ttl_path
 
-    def create_xrefs_ttl(
+    def __create_xrefs_ttl(
         self,
         include: list[str] = [
             "gxa.expt",
@@ -275,7 +275,7 @@ class TurtleCreator:
                 del graph
             return ttl_paths
 
-    def create_compound_relations_ttl(self) -> str:
+    def __create_compound_relations_ttl(self) -> str:
         """Create compound relation turtle file.
 
         Returns:
@@ -302,3 +302,27 @@ class TurtleCreator:
         graph.serialize(ttl_path, format="turtle")
         del graph
         return ttl_path
+
+
+def create_ttls(
+    engine: Optional[Engine] = None,
+    export_to_folder: Optional[str] = None,
+) -> str:
+    """Create all turtle files.
+
+    If engine=None tries to get the settings from config ini file
+
+    If export_to_folder=None takes the default path.
+
+    Args:
+        engine (Engine | None, optional): SQLAlchemy class. Defaults to None.
+        export_to_folder (str | None, optional): Folder to export ttl files.
+            Defaults to None.
+
+    Returns:
+        str: path zipped file with ttls.
+    """
+    ttl_creator = TurtleCreator(engine=engine)
+    if export_to_folder:
+        ttl_creator._set_ttls_folder(export_to_folder)
+    return ttl_creator.create_ttls()
