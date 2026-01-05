@@ -5,10 +5,10 @@ build:
   tools:
     python: "3.11"
   jobs:
-    # Use 'pip install' with the --group flag (supported in modern pip)
     install:
       - pip install .
-      - pip install --group readthedocs
+      - pip install dependency-groups
+      - pip-install-dependency-groups readthedocs
 
 mkdocs:
   configuration: mkdocs.yml
