@@ -49,7 +49,13 @@ def main() -> None:
     help=f"SQLAlchemy engine URL [default: sqlite:///{PROJECT_NAME}.db]",
 )
 def import_data(force_download: bool, connection_string: str, keep_files: bool) -> None:
-    """Import data."""
+    """Import data.
+
+    Args:
+        force_download (bool): Force re-download of the source file (default: False)
+        connection_string (str): SQLAlchemy engine URL (default: sqlite:///chebi.db)
+        keep_files (bool): Keep downloaded source files after import (default: False)
+    """
     engine = create_engine(connection_string)
     DbManager(engine=engine).import_data(
         force_download=force_download, keep_files=keep_files
@@ -66,7 +72,11 @@ def import_data(force_download: bool, connection_string: str, keep_files: bool) 
     help=f"SQLAlchemy engine URL [default: sqlite:///{PROJECT_NAME}.db]",
 )
 def create_ttls(connection_string: str) -> None:
-    """Create TTL files from local database."""
+    """Create TTL files from local database.
+
+    Args:
+        connection_string (str): SQLAlchemy engine URL
+    """
     path_to_zip = TurtleCreator(create_engine(connection_string)).create_ttls()
     click.echo(
         f"Path to the zip file containing all generated Turtle files. {path_to_zip}"
@@ -97,7 +107,14 @@ def import_neo4j(uri: str, user: str, password: str) -> None:
 @click.option("--user", "-u", default="admin", help="API username (default=admin)")
 @click.option("--password", "-p", default="admin", help="API password (default: admin)")
 def run_api(host: str, port: int, user: str, password: str) -> None:
-    """Run the CLI."""
+    """Run the API server.
+
+    Args:
+        host (str): API server host (default: 0.0.0.0)
+        port (int): API server port (default: 8000)
+        user (str): API username (default=admin)
+        password (str): API password (default: admin)
+    """
     # set env variables for API authentication
     os.environ["API_USER"] = user
     os.environ["API_PASSWORD"] = password
