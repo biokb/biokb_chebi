@@ -34,10 +34,10 @@ to provide this ***biokb_chebi*** ...
 
 All biokb packages share the same API and CLI structure. You have different options to run the packages:
 
-1. [from command line](#from-command-line) (simplest way to get started)
-2. [as RESTful API server](#as-restful-api-server) (can start directly from command line)
-3. [as Podman/Docker container](#as-podmandocker-container) (without import into Neo4J, but export of turtles possible)
-4. [as Podman/Docker networked containers](#as-podmandocker-networked-containers) (with all features) and 3 containers: 
+1. [from command line](run_the_pipeline.md#from-command-line) (simplest way to get started)
+2. [as RESTful API server](run_the_pipeline.md#as-restful-api-server) (can start directly from command line)
+3. [as Podman/Docker container](run_the_pipeline.md#as-podmandocker-container) (without import into Neo4J, but export of turtles possible)
+4. [as Podman/Docker networked containers](run_the_pipeline.md#as-podmandocker-networked-containers) (with all features) and 3 containers: 
    1. high-performance relational databases (PostgreSQL, Oracle, MySQL, ...)
    2. RESTful API (fastAPI) for queries, data import and export
    3. GUI for querying and administration of MySQL over the Web
