@@ -9,7 +9,7 @@
 
 BioKb-ChEBI (biokb_chebi) is a python package to import ChEBI data into a relational database and create RDF triples (turtles) from it. The turtles can be imported into a Neo4J graph database. The package is part of the [BioKb family of packages](https://github.com/biokb) to create and connect biological and medical knowledge bases and graphs.
 
-![](docs/imgs/components.png)
+![Components](https://raw.githubusercontent.com/biokb/biokb_chebi/refs/heads/main/docs/imgs/components.png)
 
 The package provides different options to run it: from command line, as RESTful API server, as Podman/Docker container, or as Podman/Docker networked containers with Neo4J and a relational database.
 
@@ -79,13 +79,19 @@ biokb_chebi import-neo4j -p neo4j_password
 
 http://localhost:7474  (user/password: neo4j/neo4j_password)
 
-For more options see the CLI section below.
+For more options see the [CLI options](#cli-options) section below.
 
----
 
 ### As RESTful API server
 
-***Usage:*** `biokb_chebi create-ttls [OPTIONS]`
+***Usage:*** `biokb_chebi run-api [OPTIONS]`
+
+```bash
+biokb_chebi run-api
+```
+
+- ***user***: admin  
+- ***password***: admin
 
 | Option | long | Description | default |
 |--------|------|-------------|---------|
@@ -102,7 +108,6 @@ http://localhost:8000/docs#/
 
 Be patient, each step takes several minutes.
 
----
 
 ### As Podman/Docker container
 
@@ -112,8 +117,8 @@ Build & run with Podman:
 ```bash
 git clone https://github.com/biokb/biokb_chebi.git
 cd biokb_chebi
-podman build -t biokb_chebi .
-podman run -d --rm --name biokb_chebi -p 8000:8000 biokb_chebi
+podman build -t biokb_chebi_image .
+podman run -d --rm --name biokb_chebi_simple -p 8000:8000 biokb_chebi_image
 ```
 
 - Login: admin  
@@ -121,23 +126,30 @@ podman run -d --rm --name biokb_chebi -p 8000:8000 biokb_chebi
 
 With environment variable for user and password for more security:
 ```bash
-podman run -d --rm --name biokb_chebi -p 8000:8000 -e API_PASSWORD=your_secure_password -e API_USER=your_secure_user biokb_chebi
+podman run -d --rm --name biokb_chebi_simple -p 8000:8000 -e API_PASSWORD=your_secure_password -e API_USER=your_secure_user biokb_chebi_image
 ```
 
 http://localhost:8000/docs
 
 On the website:
 1. [Import data](http://localhost:8000/docs#/Database%20Management/import_data_import_data__post)
-2. http://localhost:8000/docs#/Database%20Management/get_report_export_ttls__get
+2. [Export ttls](http://localhost:8000/docs#/Database%20Management/get_report_export_ttls__get)
 
-Neo4j import in this context is not possible because Neo4J is not running as service.
+Neo4j import in this context is not possible because Neo4J is not running in the same network as service, but the exported turtles can be imported into any Neo4J instance using the CLI (`biokb_chebi import-neo4j`).
 
+to stop the container:
+```bash
+podman stop biokb_chebi_simple
+```
+to rerun the container:
+```bash
+podman start biokb_chebi_simple
+```
 
----
+### Run as Podman/Docker networked containers
 
-### Run as Podman/Docker networked containers with Neo4J and MySQL
+The easiest way to run all components (relational database, RESTful API server, phpMyAdmin GUI) is to use Podman/Docker networked containers with `podman-compose`/`docker-compose`.
 
-Build & run with Docker:
 ```bash
 git clone https://github.com/biokb/biokb_chebi.git
 cd biokb_chebi
@@ -222,13 +234,6 @@ biokb_chebi import-neo4j -p neo4j_password
 
 http://localhost:7474  (user/password: neo4j/neo4j_password)
 
-
-For testing you can install from TestPyPI:
-```bash
-uv venv
-source venv/bin/activate
-uv pip install --no-cache-dir -i https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple/ biokb-chebi==0.1.0
-```
 
 
 ## How to run Neo4J
