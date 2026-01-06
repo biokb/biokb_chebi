@@ -45,6 +45,7 @@ nav:
   - CLI: cli.md
   - query_examples.ipynb
   - How to run Neo4J: how_to_run_neo4j.md
+  - API Reference: api.md
 extra:
   generator: false
 
