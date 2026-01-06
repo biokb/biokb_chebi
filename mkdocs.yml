@@ -39,10 +39,12 @@ markdown_extensions:
 nav:
   - Home: index.md
   - Installation: installation.md
-  - Query: query.ipynb
-  - Database Management: database_management.md
-  - ChEBI Integration: chebi_integration.md
-  - FAQ: faq.md
+  - Run the pipeline: run_the_pipeline.md
+  - Data model: data_model.md
+  - Query examples: query_examples.md
+  - CLI: cli.md
+  - Query examples: query_examples.ipynb
+  - How to run Neo4J: how_to_run_neo4j.md
 extra:
   generator: false
 
