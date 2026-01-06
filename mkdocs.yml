@@ -5,8 +5,8 @@ theme:
   name: material
   font:
     text: Mulish
-  logo: images/biokb_logo.png
-  favicon: images/biokb_logo.png
+  logo: images/biokb_logo.svg
+  favicon: images/biokb_logo.svg
   features:
     - navigation.footer
     - navigation.indexes
