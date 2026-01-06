@@ -84,7 +84,7 @@ to rerun the container:
 podman start biokb_chebi_simple
 ```
 
-### Run as Podman/Docker networked containers
+### As Podman/Docker networked containers
 
 If you have docker or podman on your system, the easiest way to run all components (relational database, RESTful API server, phpMyAdmin GUI) is to use networked containers with `podman-compose`/`docker-compose`.
 
