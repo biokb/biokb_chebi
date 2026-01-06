@@ -193,4 +193,4 @@ Tables of all models in the Biokb Chebi database with field descriptions and rel
 
 ## Entity Relationship Diagram
 
-<img src="imgs/erd_from_sqlalchemy.png" alt="Entity Relationship Diagram" style="max-width: 800; height: auto;">
+![ER model](https://raw.githubusercontent.com/biokb/biokb_chebi/refs/heads/main/docs/imgs/erd_from_sqlalchemy.png)
