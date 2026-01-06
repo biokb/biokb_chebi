@@ -48,7 +48,11 @@ def main() -> None:
     default=f"sqlite:///{PROJECT_NAME}.db",
     help=f"SQLAlchemy engine URL [default: sqlite:///{PROJECT_NAME}.db]",
 )
-def import_data(force_download: bool, connection_string: str, keep_files: bool) -> None:
+def import_data(
+    force_download: bool = False,
+    connection_string: str = f"sqlite:///{PROJECT_NAME}.db",
+    keep_files: bool = False,
+) -> None:
     """Import data.
 
     Args:
@@ -71,7 +75,7 @@ def import_data(force_download: bool, connection_string: str, keep_files: bool) 
     default=f"sqlite:///{PROJECT_NAME}.db",
     help=f"SQLAlchemy engine URL [default: sqlite:///{PROJECT_NAME}.db]",
 )
-def create_ttls(connection_string: str) -> None:
+def create_ttls(connection_string: str = f"sqlite:///{PROJECT_NAME}.db") -> None:
     """Create TTL files from local database.
 
     Args:
@@ -88,32 +92,39 @@ def create_ttls(connection_string: str) -> None:
     "--uri",
     "-i",
     default="bolt://localhost:7687",
-    help='Neo4j database URI (default="bolt://localhost:7687")',
+    help='Neo4j database URI [default:"bolt://localhost:7687"]',
 )
 @click.option(
-    "--user", "-u", default=NEO4J_USER, help='Neo4j username (default="neo4j")'
+    "--user", "-u", default=NEO4J_USER, help='Neo4j username [default="neo4j"]'
 )
 @click.option("--password", "-p", required=True, help="Neo4j password")
-def import_neo4j(uri: str, user: str, password: str) -> None:
+def import_neo4j(
+    password: str, uri: str = "bolt://localhost:7687", user: str = NEO4J_USER
+) -> None:
     """Import TTL files into Neo4j database."""
     Neo4jImporter(neo4j_uri=uri, neo4j_user=user, neo4j_pwd=password).import_ttls()
 
 
 @main.command("run-api")
 @click.option(
-    "--host", "-h", default="0.0.0.0", help="API server host (default: 0.0.0.0)"
+    "--host", "-h", default="0.0.0.0", help="API server host [default: 0.0.0.0]"
 )
-@click.option("--port", "-P", default=8000, help="API server port (default: 8000)")
-@click.option("--user", "-u", default="admin", help="API username (default=admin)")
-@click.option("--password", "-p", default="admin", help="API password (default: admin)")
-def run_api(host: str, port: int, user: str, password: str) -> None:
+@click.option("--port", "-P", default=8000, help="API server port [default: 8000]")
+@click.option("--user", "-u", default="admin", help="API username [default=admin]")
+@click.option("--password", "-p", default="admin", help="API password [default: admin]")
+def run_api(
+    host: str = "0.0.0.0",
+    port: int = 8000,
+    user: str = "admin",
+    password: str = "admin",
+) -> None:
     """Run the API server.
 
     Args:
-        host (str): API server host (default: 0.0.0.0)
-        port (int): API server port (default: 8000)
-        user (str): API username (default=admin)
-        password (str): API password (default: admin)
+        host (str): API server host
+        port (int): API server port
+        user (str): API username
+        password (str): API password
     """
     # set env variables for API authentication
     os.environ["API_USER"] = user
