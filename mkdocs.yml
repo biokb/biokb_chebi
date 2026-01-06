@@ -43,7 +43,7 @@ nav:
   - Data model: data_model.md
   - Query examples: query_examples.md
   - CLI: cli.md
-  - Query examples: query_examples.ipynb
+  - query_examples.ipynb
   - How to run Neo4J: how_to_run_neo4j.md
 extra:
   generator: false

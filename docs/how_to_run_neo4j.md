@@ -1,6 +1,7 @@
 # How to run Neo4J
 
 For the options "Run BioKb-ChEBI as ..."
+
 1. [From command line](#from-command-line)
 2. [As RESTful API server](#as-restful-api-server)
 
