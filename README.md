@@ -1,21 +1,45 @@
 ![](docs/imgs/biokb_logo_writing.png)
 # BioKb-ChEBI
 
+![](https://img.shields.io/pypi/v/biokb_chebi?color=blue&label=biokb_chebi&style=flat-square)
+![](https://img.shields.io/pypi/pyversions/biokb_chebi?style=flat-square)
+![](https://img.shields.io/pypi/l/biokb_chebi?style=flat-square)
 
-- allows to import [ChEBI](https://www.ebi.ac.uk/chebi/) into relational database, create RDF triples (turtles) and import the triples into graph database ([Neo4J](https://neo4j.com)).
-- Provides REST API and CLI to run all steps.
-- Database backend is [SQLAlchemy](https://www.sqlalchemy.org/), RDF handling with [RDFlib](https://rdflib.readthedocs.io/) and Neo4J import with [Neo4J Python Driver](https://neo4j.com/docs/api/python-driver/current/).
-- RDBMS supported: [SQLite](https://sqlite.org/), [MariaDB](https://go.mariadb.com)/[MySQL](https://www.mysql.com/), [PostgreSQL](https://www.postgresql.org/), [Oracle](https://www.oracle.com/database/), [Microsoft SQL Server](https://www.microsoft.com/en-us/sql-server), and any other database [supported by SQLAlchemy](https://docs.sqlalchemy.org/en/20/core/engines.html#supported-databases).
-- is part of the ***[biokb](https://neo4j.com)*** python package family which allow to combine knowledge bases and graphs from different domain in the context of biology and medicine.
 
-All biokb packages share the same API and CLI structure, so you can easily combine them in your projects. You have different options to run the packages:
-1. from command line (simplest way to get started)
-2. as REST API server (can start directly from command line)
-3. as Podman/Docker container (without import into Neo4J, but export of turtles possible)
-4. as Podman/Docker networked containers with 
+
+BioKb-ChEBI (biokb_chebi) is a python package to import ChEBI data into a relational database and create RDF triples (turtles) from it. The turtles can be imported into a Neo4J graph database. The package is part of the [BioKb family of packages](https://github.com/biokb) to create and connect biological and medical knowledge bases and graphs.
+
+![](docs/imgs/components.png)
+
+The package provides different options to run it: from command line, as RESTful API server, as Podman/Docker container, or as Podman/Docker networked containers with Neo4J and a relational database.
+
+## Features
+
+biokb_chebi allows to ...
+
+1. Query ChEBI data with SQLAlchemy or raw SQL
+2. Load, query and manage ChEBI data with GUIs for knowledge base and graphs (phpMyAdmin, Neo4J Browser)
+3. Query data via a RESTful API (FastAPI) with OpenAPI documentation and interactive Swagger-UI
+
+to provide this ***biokb_chebi*** ...
+
+- imports [ChEBI](https://www.ebi.ac.uk/chebi/) data into a relational database 
+- creates [RDF](https://www.w3.org/RDF/) triples (turtles) from the relational database
+- imports the RDF triples into a [Neo4J](https://neo4j.com) graph database
+
+***Supported databases***: [SQLite](https://sqlite.org/), [MariaDB](https://go.mariadb.com)/[MySQL](https://www.mysql.com/), [PostgreSQL](https://www.postgresql.org/), [Oracle](https://www.oracle.com/database/), [Microsoft SQL Server](https://www.microsoft.com/en-us/sql-server), and any other database [supported by SQLAlchemy](https://docs.sqlalchemy.org/en/20/core/engines.html#supported-databases).
+
+
+### Options to run BioKb-ChEBI
+
+All biokb packages share the same API and CLI structure. You have different options to run the packages:
+1. [from command line](#from-command-line) (simplest way to get started)
+2. [as RESTful API server](#as-restful-api-server) (can start directly from command line)
+3. [as Podman/Docker container](#as-podmandocker-container) (without import into Neo4J, but export of turtles possible)
+4. [as Podman/Docker networked containers](#as-podmandocker-networked-containers) (with all features) and 3 containers: 
    1. high-performance relational databases (PostgreSQL, Oracle, MySQL, ...)
-   2. RESTful API (fastAPI)
-   3. phpMyAdmin as services. 
+   2. RESTful API (fastAPI) for queries, data import and export
+   3. GUI for querying and administration of MySQL over the Web
 
 
 ## Installation
@@ -36,15 +60,9 @@ pip install biokb_chebi
 ```
 
 
-## Quick Start
+## Run BioKb-ChEBI
 
-In this section we describe the different options to run **biokb_chebi**. For detailed description of each option please check the respective possibilities in the official documentation.
-
-You have different options to run the package: 
-
-1. from command line, as REST API server, as Podman/Docker containers or as Podman/Docker networked containers with high-performance relational databases (PostgreSQL, Oracle, MySQL, ...) as services.
-
-### Import data, create turtles and import into Neo4J from command line
+### From command line
 
 For sure the simplest way is to run all steps:
 
@@ -52,7 +70,9 @@ For sure the simplest way is to run all steps:
 biokb_chebi import-data
 biokb_chebi create-ttls
 ```
-Before importing into Neo4J, make sure Neo4J is running (see below):
+Before importing into Neo4J, make sure Neo4J is running (see below "[How to run Neo4J](#how-to-run-neo4j)").
+
+Then import into Neo4J:
 ```bash
 biokb_chebi import-neo4j -p neo4j_password
 ```
@@ -61,27 +81,30 @@ http://localhost:7474  (user/password: neo4j/neo4j_password)
 
 For more options see the CLI section below.
 
+---
 
-### Run API server
+### As RESTful API server
 
-```bash
-biokb_chebi run-api
-```
+***Usage:*** `biokb_chebi create-ttls [OPTIONS]`
 
-- ***user***: admin  
-- ***password***: admin
+| Option | long | Description | default |
+|--------|------|-------------|---------|
+| -P     | --port | API server port | 8000 |
+| -u     | --user     | API username | admin   |
+| -p     | --password | API password | admin | 
 
 http://localhost:8000/docs#/
 
 1. [Import data](http://localhost:8000/docs#/Database%20Management/import_data_import_data__post)
 2. [Export ttls](http://localhost:8000/docs#/Database%20Management/get_report_export_ttls__get)
-3. Run Neo4J (see below)
+3. Run Neo4J (see below "[How to run Neo4J](#how-to-run-neo4j)")
 4. [Import Neo4J](http://localhost:8000/docs#/Database%20Management/import_neo4j_import_neo4j__get)
 
 Be patient, each step takes several minutes.
 
+---
 
-### Run as Podman/ Docker container
+### As Podman/Docker container
 
 For docker just replace `podman` with `docker` in the commands below.
 
@@ -110,6 +133,8 @@ On the website:
 Neo4j import in this context is not possible because Neo4J is not running as service.
 
 
+---
+
 ### Run as Podman/Docker networked containers with Neo4J and MySQL
 
 Build & run with Docker:
@@ -121,6 +146,11 @@ podman-compose -f docker-compose.db_neo.yml --env-file .env_template up -d
 ```
 http://localhost:8000/docs
 
+On the website:
+1. [Import data](http://localhost:8000/docs#/Database%20Management/import_data_import_data__post)
+2. [Export ttls](http://localhost:8000/docs#/Database%20Management/get_report_export_ttls__get)
+3. [Import Neo4J](http://localhost:8000/docs#/Database%20Management/import_neo4j_import_neo4j__get)
+
 stop with:
 ```bash
 docker stop biokb_chebi
@@ -131,35 +161,8 @@ rerun with:
 docker start biokb_chebi
 ```
 
-### Run with MySQL and Neo4J as podman-compose services
 
-```bash
-git clone https://github.com/biokb/biokb_chebi.git
-cd biokb_chebi 
-podman-compose -f docker-compose.db_neo.yml --env-file .env_template up -d
-podman-compose --env-file .env_template up -d
-```
-
-In production copy .env_template to .env and use secure passwords (and skip `--env-file .env_template` in the last command)!
-
-```bash
-podman-compose -f docker-compose.db_neo.yml --env-file .env_template up -d
-podman-compose --env-file .env_template up -d
-```
-
-http://localhost:8001/docs
-
-On the website:
-1. [Import data](http://localhost:8001/docs#/Database%20Management/import_data_import_data__post)
-2. [Export ttls](http://localhost:8001/docs#/Database%20Management/get_report_export_ttls__get)
-3. [Import Neo4J](http://localhost:8001/docs#/Database%20Management/import_neo4j_import_neo4j__get)
-
-
-## CLI
-Install with
-```
-pip install biokb_chebi
-```
+## CLI Options
 
 ### Import data into relational database
 
@@ -228,14 +231,16 @@ uv pip install --no-cache-dir -i https://test.pypi.org/simple/ --extra-index-url
 ```
 
 
-## Neo4J
+## How to run Neo4J
 
-### Run Neo4j
+For the options "Run BioKb-ChEBI as ..."
+1. [From command line](#from-command-line)
+2. [As RESTful API server](#as-restful-api-server)
 
-To import the created turtles into Neo4J, you need to have a running Neo4J instance. You can install a 
+you need to run Neo4J separately.
 
 
-In the simplest case you can run Neo4J as Podman/ Docker container.
+If you have not already a Neo4j instance running, the easiest way is to run Neo4J as Podman/ Docker container.
 
 
 For docker just replace `podman` with `docker` in the commands below.
@@ -243,9 +248,15 @@ For docker just replace `podman` with `docker` in the commands below.
 podman run -d --rm --name biokb-neo4j -p7474:7474 -p7687:7687 -e NEO4J_AUTH=neo4j/neo4j_password neo4j:latest
 # Remove `--rm` if you want to keep the container after stopping it.
 ```
+Neo4J is then available at:
+http://localhost:7474  (user/password: neo4j/neo4j_password
 
-### Stop Neo4J
+Stop Neo4J with:
 
 ```bash
 podman stop biokb-neo4j
+```
+if you have not used `--rm` above, you can restart Neo4J with:
+```bash
+podman start biokb-neo4j
 ```
