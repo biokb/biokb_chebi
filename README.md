@@ -1,4 +1,4 @@
-![](docs/imgs/biokb_logo_writing.png)
+![docs/imgs/](https://raw.githubusercontent.com/biokb/biokb_chebi/refs/heads/main/docs/imgs/biokb_logo_writing.png)
 # BioKb-ChEBI
 
 ![](https://img.shields.io/pypi/v/biokb_chebi?color=blue&label=biokb_chebi&style=flat-square)
@@ -148,7 +148,7 @@ podman start biokb_chebi_simple
 
 ### Run as Podman/Docker networked containers
 
-The easiest way to run all components (relational database, RESTful API server, phpMyAdmin GUI) is to use Podman/Docker networked containers with `podman-compose`/`docker-compose`.
+If you have docker or podman on your system, the easiest way to run all components (relational database, RESTful API server, phpMyAdmin GUI) is to use networked containers with `podman-compose`/`docker-compose`.
 
 ```bash
 git clone https://github.com/biokb/biokb_chebi.git
@@ -173,6 +173,7 @@ rerun with:
 docker start biokb_chebi
 ```
 
+***Tip***: Change the default passwords in the `.env_template` file before starting the containers for better security.
 
 ## CLI Options
 
@@ -265,3 +266,24 @@ if you have not used `--rm` above, you can restart Neo4J with:
 ```bash
 podman start biokb-neo4j
 ```
+
+## Query database with SQLAlchemy
+
+In order to query the database with SQLAlchemy you can use the following code snippet:
+
+```python
+import os
+from biokb_chebi import get_session
+from biokb_chebi.db.models import Compound
+os.environ.pop("CONNECTION_STR", None)  # to make sure no environment variable is used
+with get_session() as session:
+    results = session.query(Compound).filter(Compound.name.ilike("%glucose%")).limit(2)
+    for row in results:
+        print(f"Name: {row.ascii_name}, Name: {row.source}")
+```
+Output:
+```console
+Name: 1,2,3,4-tetrakis-O-galloyl-alpha-D-glucose, Name: KEGG COMPOUND
+Name: 1-caffeoyl-beta-D-glucose, Name: KEGG COMPOUND
+```
+
