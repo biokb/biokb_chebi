@@ -96,8 +96,14 @@ class DbManager:
     ) -> Dict[str, int]:
         """Import all data in MySQL database.
 
+        Args:
+            force_download (bool, optional): If True, will force download the data, even if
+                files already exist. If False, it will skip the downloading part if files
+                already exist locally. Defaults to False.
+            keep_files (bool, optional): If True, downloaded files are kept after import.
+                Defaults to False.
         Returns:
-            bool: Returns True
+            Dict[str, int]: table=key and number of inserted=value
         """
         # Always remove a log if a new import starts
         logger.info("Data folder: %s", self.__data_folder)
