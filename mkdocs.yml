@@ -50,6 +50,7 @@ extra:
 
 plugins:
   - search
+  - mkdocstrings
   - mkdocs-jupyter:
       execute: false
 
