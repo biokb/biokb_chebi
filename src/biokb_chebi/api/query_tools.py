@@ -9,19 +9,6 @@ from sqlalchemy.orm import Session
 
 from biokb_chebi.db import models
 
-QueryModels: TypeAlias = Union[
-    Type[models.Compound],
-    Type[models.Name],
-    Type[models.DatabaseAccession],
-    Type[models.ChemicalData],
-    Type[models.Relation],
-    Type[models.Reference],
-    Type[models.Structure],
-    Type[models.Source],
-    Type[models.RelationType],
-    Type[models.Status],
-]
-
 SASearchResults: TypeAlias = dict[
     str,
     int | Sequence[models.Base] | None,
@@ -37,7 +24,7 @@ logger = logging.getLogger(__name__)
 
 def build_dynamic_query(
     search_obj: BaseModel,
-    model_cls: QueryModels,
+    model_cls: Type[models.Base],
     session: Session,
     limit: Optional[int] = None,  # default limit for pagination
     offset: Optional[int] = None,  # default offset for pagination
@@ -57,7 +44,7 @@ def build_dynamic_query(
 
 def _build_dynamic_query(
     search_obj: BaseModel,
-    model_cls: QueryModels,
+    model_cls: Type[models.Base],
     session: Session,
     limit: Optional[int] = None,  # default limit for pagination
     offset: Optional[int] = None,  # default offset for pagination
