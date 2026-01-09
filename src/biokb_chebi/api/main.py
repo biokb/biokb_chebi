@@ -12,7 +12,6 @@ from fastapi.security import HTTPBasic, HTTPBasicCredentials
 from sqlalchemy import Engine, create_engine
 from sqlalchemy.orm import Session
 
-from biokb_chebi import constants
 from biokb_chebi.api import schemas
 from biokb_chebi.api.query_tools import SASearchResults, build_dynamic_query
 from biokb_chebi.api.tags import Tag
@@ -21,6 +20,7 @@ from biokb_chebi.constants import (
     NEO4J_PASSWORD,
     NEO4J_URI,
     NEO4J_USER,
+    ZIPPED_TTLS_PATH,
 )
 from biokb_chebi.db import manager, models
 from biokb_chebi.rdf.neo4j_importer import Neo4jImporter
@@ -69,7 +69,7 @@ description = (
 app = FastAPI(
     title="RESTful API for BioKB-ChEBI.",
     description=description,
-    version="0.0.1",
+    version="0.1.0",
     lifespan=lifespan,
 )
 
@@ -155,7 +155,7 @@ async def get_report(
     ),
 ) -> FileResponse:
 
-    file_path = constants.ZIPPED_TTLS_PATH
+    file_path = ZIPPED_TTLS_PATH
     if not os.path.exists(file_path) or force_create:
         try:
             TurtleCreator().create_ttls()
@@ -191,7 +191,7 @@ async def import_neo4j(
 ) -> dict[str, str]:
     """Import RDF turtle files in Neo4j."""
     try:
-        if not os.path.exists(constants.ZIPPED_TTLS_PATH):
+        if not os.path.exists(ZIPPED_TTLS_PATH):
             raise HTTPException(
                 status_code=status.HTTP_405_METHOD_NOT_ALLOWED,
                 detail=(
