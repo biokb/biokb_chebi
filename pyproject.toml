@@ -1,6 +1,6 @@
 [project]
 name = "biokb-chebi"
-version = "0.1.2"
+version = "0.1.3"
 description = "A Python package to import ChEBI data in MySQL and Neo4J"
 authors = [
     {name = "Christian Ebeling", email = "christian.ebeling@scai.fraunhofer.de"},

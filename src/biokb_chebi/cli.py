@@ -129,7 +129,8 @@ def run_api(
     # set env variables for API authentication
     os.environ["API_USER"] = user
     os.environ["API_PASSWORD"] = password
-    click.echo(f"API server running at http://{host}:{port}/docs#/")
+    host_shown = "127.0.0.1" if host == "0.0.0.0" else host
+    click.echo(f"API server running at http://{host_shown}:{port}/docs#/")
     run_server(host=host, port=port)
 
 

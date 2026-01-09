@@ -151,29 +151,31 @@ podman start biokb_chebi_simple
 If you have docker or podman on your system, the easiest way to run all components (relational database, RESTful API server, phpMyAdmin GUI) is to use networked containers with `podman-compose`/`docker-compose`.
 
 ```bash
-git clone https://github.com/biokb/biokb_chebi.git
-cd biokb_chebi
+git clone https://github.com/biokb/biokb_taxtree.git
+cd biokb_taxtree
 podman-compose -f docker-compose.db_neo.yml --env-file .env_template up -d
-
+podman-compose --env-file .env_template up -d
 ```
-http://localhost:8000/docs
+http://localhost:8001/docs
 
 On the website:
-1. [Import data](http://localhost:8000/docs#/Database%20Management/import_data_import_data__post)
-2. [Export ttls](http://localhost:8000/docs#/Database%20Management/get_report_export_ttls__get)
-3. [Import Neo4J](http://localhost:8000/docs#/Database%20Management/import_neo4j_import_neo4j__get)
+1. [Import data](http://localhost:8001/docs#/Database%20Management/import_data_import_data__post)
+2. [Export ttls](http://localhost:8001/docs#/Database%20Management/get_report_export_ttls__get)
+3. [Import Neo4J](http://localhost:8001/docs#/Database%20Management/import_neo4j_import_neo4j__get)
 
 stop with:
 ```bash
-docker stop biokb_chebi
+podman pod stop pod_biokb_db
+podman-compose stop
 ```
 
 rerun with:
 ```bash
-docker start biokb_chebi
+podman pod start pod_biokb_db
+podman-compose start
 ```
 
-***Tip***: Change the default passwords in the `.env_template` file before starting the containers for better security.
+***Tip***: Copy the `.env_template` to `.env` and change the default passwords in the `.env` file before starting the containers for better security. If you have done that you need to use `--env-file .env` instead of `--env-file .env_template` in the commands above or just omit the `--env-file` option (because the default is `.env`).
 
 ## CLI Options
 
