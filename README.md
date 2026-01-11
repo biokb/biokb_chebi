@@ -1,10 +1,10 @@
 ![docs/imgs/](https://raw.githubusercontent.com/biokb/biokb_chebi/refs/heads/main/docs/imgs/biokb_logo_writing.png)
 # BioKb-ChEBI
 
-![](https://img.shields.io/pypi/v/biokb_chebi?color=blue&label=biokb_chebi&style=flat-square)
-![](https://img.shields.io/pypi/pyversions/biokb_chebi?style=flat-square)
-![](https://img.shields.io/pypi/l/biokb_chebi?style=flat-square)
-
+![](https://img.shields.io/pypi/v/biokb-chebi?style=flat-square)
+![](https://img.shields.io/pypi/pyversions/biokb-chebi?style=flat-square)
+![](https://img.shields.io/github/actions/workflow/status/biokb/biokb_chebi/pypi-publish.yml?style=flat-square)
+![](https://img.shields.io/github/license/biokb/biokb_chebi?style=flat-square)
 
 
 BioKb-ChEBI (biokb_chebi) is a python package to import ChEBI data into a relational database and create RDF triples (turtles) from it. The turtles can be imported into a Neo4J graph database. The package is part of the [BioKb family of packages](https://github.com/biokb) to create and connect biological and medical knowledge bases and graphs.
