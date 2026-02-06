@@ -6,6 +6,7 @@ from typing import Dict, Optional
 
 import pandas as pd
 import requests
+from httpx import delete
 from sqlalchemy import Engine, create_engine, text
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.orm.session import Session
@@ -96,7 +97,7 @@ class DbManager:
         Base.metadata.create_all(self.__engine)
 
     def import_data(
-        self, force_download: bool = False, keep_files: bool = True
+        self, force_download: bool = False, delete_files: bool = False
     ) -> Dict[str, int]:
         """Import all data in MySQL database.
 
@@ -104,7 +105,7 @@ class DbManager:
             force_download (bool, optional): If True, will force download the data, even if
                 files already exist. If False, it will skip the downloading part if files
                 already exist locally. Defaults to False.
-            keep_files (bool, optional): If True, downloaded files are kept after import.
+            delete_files (bool, optional): If True, downloaded files are deleted after import.
                 Defaults to False.
         Returns:
             Dict[str, int]: table=key and number of inserted=value
@@ -114,7 +115,7 @@ class DbManager:
         self.__download_data(force_download=force_download)
         self.__create_empty_db()
         result_dict = self.__insert_data()
-        if not keep_files:
+        if delete_files:
             for file_name in self.table_file_dict.values():
                 path_to_delete = os.path.join(self.__data_folder, file_name)
                 if os.path.exists(path_to_delete):
@@ -200,7 +201,7 @@ class DbManager:
 def import_data(
     engine: Optional[Engine] = None,
     force_download: bool = False,
-    keep_files: bool = True,
+    delete_files: bool = False,
 ) -> Dict[str, int]:
     """Import all data in database.
 
@@ -209,14 +210,16 @@ def import_data(
         force_download (bool, optional): If True, will force download the data, even if
             files already exist. If False, it will skip the downloading part if files
             already exist locally. Defaults to False.
-        keep_files (bool, optional): If True, downloaded files are kept after import.
+        delete_files (bool, optional): If True, downloaded files are deleted after import.
             Defaults to False.
 
     Returns:
         Dict[str, int]: table=key and number of inserted=value
     """
     db_manager = DbManager(engine)
-    return db_manager.import_data(force_download=force_download, keep_files=keep_files)
+    return db_manager.import_data(
+        force_download=force_download, delete_files=delete_files
+    )
 
 
 def get_session(engine: Optional[Engine] = None) -> Session:

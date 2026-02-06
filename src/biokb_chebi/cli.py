@@ -1,15 +1,22 @@
+import logging
 import os
+from typing import Optional
 
 import click
 from sqlalchemy import create_engine
 
 from biokb_chebi import __version__
 from biokb_chebi.api.main import run_api
-from biokb_chebi.constants import NEO4J_USER, PROJECT_NAME
+from biokb_chebi.constants import (
+    DB_DEFAULT_CONNECTION_STR,
+    NEO4J_URI,
+    NEO4J_USER,
+    PROJECT_NAME,
+)
 from biokb_chebi.db.manager import DbManager
 from biokb_chebi.rdf.neo4j_importer import Neo4jImporter
 from biokb_chebi.rdf.turtle import TurtleCreator
-import logging
+
 
 def setup_logging(ctx, param, value):
     # Only set up logging if the user actually asks for it
@@ -50,35 +57,35 @@ def main() -> None:
     help="Force re-download of the source file [default: False]",
 )
 @click.option(
-    "-k",
-    "--keep-files",
+    "-d",
+    "--delete-files",
     is_flag=True,
     type=bool,
     default=False,
-    help="Keep downloaded source files after import [default: False]",
+    help="Delete downloaded source files after import [default: False]",
 )
 @click.option(
     "-c",
     "--connection-string",
     type=str,
-    default=f"sqlite:///{PROJECT_NAME}.db",
-    help=f"SQLAlchemy engine URL [default: sqlite:///{PROJECT_NAME}.db]",
+    default=DB_DEFAULT_CONNECTION_STR,
+    help=f"SQLAlchemy engine URL [default: {DB_DEFAULT_CONNECTION_STR}]",
 )
 def import_data(
-    force_download: bool = False,
-    connection_string: str = f"sqlite:///{PROJECT_NAME}.db",
-    keep_files: bool = False,
+    force_download: bool,
+    connection_string: str,
+    delete_files: bool = False,
 ) -> None:
     """Import data.
 
     Args:
         force_download (bool): Force re-download of the source file (default: False)
         connection_string (str): SQLAlchemy engine URL (default: sqlite:///chebi.db)
-        keep_files (bool): Keep downloaded source files after import (default: False)
+        delete_files (bool): Delete downloaded source files after import (default: False)
     """
     engine = create_engine(connection_string)
     DbManager(engine=engine).import_data(
-        force_download=force_download, keep_files=keep_files
+        force_download=force_download, delete_files=delete_files
     )
     click.echo(f"Data imported successfully to {connection_string}")
 
@@ -88,10 +95,10 @@ def import_data(
     "-c",
     "--connection-string",
     type=str,
-    default=f"sqlite:///{PROJECT_NAME}.db",
-    help=f"SQLAlchemy engine URL [default: sqlite:///{PROJECT_NAME}.db]",
+    default=DB_DEFAULT_CONNECTION_STR,
+    help=f"SQLAlchemy engine URL [default: {DB_DEFAULT_CONNECTION_STR}]",
 )
-def create_ttls(connection_string: str = f"sqlite:///{PROJECT_NAME}.db") -> None:
+def create_ttls(connection_string: str) -> None:
     """Create TTL files from local database.
 
     Args:
@@ -103,32 +110,42 @@ def create_ttls(connection_string: str = f"sqlite:///{PROJECT_NAME}.db") -> None
     )
 
 
+neo4j_uri = os.getenv("NEO4J_URI", NEO4J_URI)
+neo4j_user = os.getenv("NEO4J_USER", NEO4J_USER)
+
+
 @main.command("import-neo4j")
 @click.option(
     "--uri",
     "-i",
-    default="bolt://localhost:7687",
-    help='Neo4j database URI [default:"bolt://localhost:7687"]',
+    default=neo4j_uri,
+    help=f'Neo4j database URI [default:"{neo4j_uri}"]',
 )
 @click.option(
-    "--user", "-u", default=NEO4J_USER, help='Neo4j username [default="neo4j"]'
+    "--user", "-u", default=neo4j_user, help=f'Neo4j username [default="{neo4j_user}"]'
 )
-@click.option("--password", "-p", required=True, help="Neo4j password")
-def import_neo4j(
-    password: str, uri: str = "bolt://localhost:7687", user: str = NEO4J_USER
-) -> None:
+@click.option("--password", "-p", default=None, help="Neo4j password")
+def import_neo4j(uri: str, user: str, password: Optional[str]) -> None:
     """Import TTL files into Neo4j database."""
+    if password is None:
+        password = click.prompt(
+            "Please enter the Neo4j password (input will be hidden)", hide_input=True
+        )
+    else:
+        click.echo(
+            "It is not recommended to provide the Neo4j password via command line."
+        )
     Neo4jImporter(neo4j_uri=uri, neo4j_user=user, neo4j_pwd=password).import_ttls()
 
 
-@main.command("run-api")
+@main.command("run-server")
 @click.option(
     "--host", "-h", default="0.0.0.0", help="API server host [default: 0.0.0.0]"
 )
 @click.option("--port", "-P", default=8000, help="API server port [default: 8000]")
 @click.option("--user", "-u", default="admin", help="API username [default=admin]")
 @click.option("--password", "-p", default="admin", help="API password [default: admin]")
-def run_api(
+def run_server(
     host: str = "0.0.0.0",
     port: int = 8000,
     user: str = "admin",
