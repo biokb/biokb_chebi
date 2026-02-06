@@ -6,7 +6,7 @@ from typing import Dict, Optional
 
 import pandas as pd
 import requests
-from sqlalchemy import Engine, create_engine
+from sqlalchemy import Engine, create_engine, text
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.orm.session import Session
 from tqdm import tqdm
@@ -68,7 +68,11 @@ class DbManager:
         self.__data_folder: str = DATA_FOLDER
         connection_str: str = os.getenv("CONNECTION_STR", DB_DEFAULT_CONNECTION_STR)
         self.__engine: Engine = engine if engine else create_engine(str(connection_str))
+        if self.__engine.dialect.name == "sqlite":
+            with self.__engine.connect() as connection:
+                connection.execute(text("pragma foreign_keys=ON"))
         self.Session: sessionmaker[Session] = sessionmaker(bind=self.__engine)
+        logger.info("Engine: %s", self.__engine)
 
     @property
     def session(self) -> Session:
@@ -92,7 +96,7 @@ class DbManager:
         Base.metadata.create_all(self.__engine)
 
     def import_data(
-        self, force_download: bool = False, keep_files: bool = False
+        self, force_download: bool = False, keep_files: bool = True
     ) -> Dict[str, int]:
         """Import all data in MySQL database.
 
@@ -196,7 +200,7 @@ class DbManager:
 def import_data(
     engine: Optional[Engine] = None,
     force_download: bool = False,
-    keep_files: bool = False,
+    keep_files: bool = True,
 ) -> Dict[str, int]:
     """Import all data in database.
 

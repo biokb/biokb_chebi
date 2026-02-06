@@ -4,15 +4,31 @@ import click
 from sqlalchemy import create_engine
 
 from biokb_chebi import __version__
-from biokb_chebi.api.main import run_server
+from biokb_chebi.api.main import run_api
 from biokb_chebi.constants import NEO4J_USER, PROJECT_NAME
 from biokb_chebi.db.manager import DbManager
 from biokb_chebi.rdf.neo4j_importer import Neo4jImporter
 from biokb_chebi.rdf.turtle import TurtleCreator
+import logging
+
+def setup_logging(ctx, param, value):
+    # Only set up logging if the user actually asks for it
+    if value == 1:
+        logging.getLogger("biokb_chebi").setLevel(logging.INFO)
+    elif value >= 2:
+        logging.getLogger("biokb_chebi").setLevel(logging.DEBUG)
+
+    # We must add a handler so the logs actually print to the screen
+    if value > 0:
+        ch = logging.StreamHandler()
+        formatter = logging.Formatter("%(name)s - %(levelname)s - %(message)s")
+        ch.setFormatter(formatter)
+        logging.getLogger("fetcher").addHandler(ch)
 
 
 @click.group()
 @click.version_option(__version__)
+@click.option("-v", count=True, callback=setup_logging, expose_value=False)
 def main() -> None:
     """Import in RDBMS, create turtle files and import into Neo4J.
 
@@ -131,7 +147,7 @@ def run_api(
     os.environ["API_PASSWORD"] = password
     host_shown = "127.0.0.1" if host == "0.0.0.0" else host
     click.echo(f"API server running at http://{host_shown}:{port}/docs#/")
-    run_server(host=host, port=port)
+    run_api(host=host, port=port)
 
 
 if __name__ == "__main__":

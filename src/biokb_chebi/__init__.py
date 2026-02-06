@@ -3,6 +3,9 @@ from importlib.metadata import PackageNotFoundError, version
 from biokb_chebi.db.manager import DbManager, get_session, import_data
 from biokb_chebi.rdf.neo4j_importer import Neo4jImporter, import_ttls
 from biokb_chebi.rdf.turtle import TurtleCreator, create_ttls
+import logging
+logger = logging.getLogger(__name__)
+logger.addHandler(logging.NullHandler())
 
 try:
     __version__ = version("biokb_chebi")

@@ -21,5 +21,5 @@
 ### import_neo4j
 ::: biokb_chebi.cli.import_neo4j
 
-### run_api
-::: biokb_chebi.cli.run_api
+### run_server
+::: biokb_chebi.cli.run_server
