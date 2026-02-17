@@ -192,6 +192,7 @@ class DbManager:
                     self.__engine,
                     index=False,
                     if_exists="append",
+                    chunksize=100000,
                 )
                 inserted[table_name] += df.shape[0]
 

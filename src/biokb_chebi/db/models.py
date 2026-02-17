@@ -258,7 +258,9 @@ class Relation(Base):
         ForeignKey(f"{TABLE_PREFIX}relation_type.id")
     )
     init_id: Mapped[int] = mapped_column(ForeignKey(f"{TABLE_PREFIX}compound.id"))
-    final_id: Mapped[int] = mapped_column(ForeignKey(f"{TABLE_PREFIX}compound.id"))
+    # final_id: Mapped[int] = mapped_column(ForeignKey(f"{TABLE_PREFIX}compound.id"))
+    # TODO: Fix this. Seems to be a problem of ChEBI
+    final_id: Mapped[Optional[int]]
     status_id: Mapped[int] = mapped_column(ForeignKey(f"{TABLE_PREFIX}status.id"))
 
     # Relationships
@@ -266,7 +268,7 @@ class Relation(Base):
         back_populates="relations"
     )
     init_compound: Mapped[Compound] = relationship(foreign_keys=[init_id])
-    final_compound: Mapped[Compound] = relationship(foreign_keys=[final_id])
+    # final_compound: Mapped[Compound] = relationship(foreign_keys=[final_id])
     status: Mapped["Status"] = relationship(back_populates="relations")
     evidence_source: Mapped[Optional["Source"]] = relationship(
         back_populates="relations"
