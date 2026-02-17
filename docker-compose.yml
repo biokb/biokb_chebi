@@ -52,6 +52,7 @@ services:
     
   chebi:
     build: .
+    container_name: biokb_chebi
     image: biokb_chebi_api:latest
     ports:
       - "${CHEBI_API_PORT}:8000"
