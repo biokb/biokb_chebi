@@ -71,8 +71,8 @@ def main() -> None:
     "-c",
     "--connection-string",
     type=str,
-    default=DB_DEFAULT_CONNECTION_STR,
-    help=f"SQLAlchemy engine URL [default: {DB_DEFAULT_CONNECTION_STR}]",
+    default=None,
+    help="SQLAlchemy engine URL",
 )
 @click.option(
     "-e",
@@ -122,8 +122,8 @@ def import_data(
     "-c",
     "--connection-string",
     type=str,
-    default=DB_DEFAULT_CONNECTION_STR,
-    help=f"SQLAlchemy engine URL [default: {DB_DEFAULT_CONNECTION_STR}]",
+    default=None,
+    help="SQLAlchemy engine URL",
 )
 def create_ttls(connection_string: str) -> None:
     """Create TTL files from local database.
