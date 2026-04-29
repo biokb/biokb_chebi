@@ -3,22 +3,20 @@ import os
 from typing import Optional
 
 import click
-from dotenv import load_dotenv
 from sqlalchemy import create_engine
-from sqlalchemy.engine import Engine
 
 from biokb_chebi import __version__
 from biokb_chebi.api.main import run_api
 from biokb_chebi.constants import (
-    DB_DEFAULT_CONNECTION_STR,
     NEO4J_URI,
     NEO4J_USER,
 )
 from biokb_chebi.db.manager import DbManager
 from biokb_chebi.rdf.neo4j_importer import Neo4jImporter
 from biokb_chebi.rdf.turtle import TurtleCreator
+from biokb_chebi.tools import get_engine
 
-logger = logging.getLogger("biokb_chebi")
+logger = logging.getLogger(__name__)
 
 
 def setup_logging(ctx, param, value):
@@ -94,24 +92,11 @@ def import_data(
         connection_string (str): SQLAlchemy engine URL (default: sqlite:///chebi.db)
         delete_files (bool): Delete downloaded source files after import (default: False)
     """
-    if env:
-        if connection_string:
-            logger.warning(
-                "Both environment file and connection string provided. Environment have priority."
-            )
-        if not os.path.exists(env):
-            logger.error("Environment file %s not found.", env)
-            return
-        load_dotenv(env, override=True)
-        connection_string = os.getenv("CONNECTION_STR")
-        if connection_string is None:
-            logger.warning(
-                "CONNECTION_STR environment variable not found. Using default connection string."
-            )
-
-    engine: Engine | None = (
-        create_engine(connection_string) if connection_string else None
-    )
+    try:
+        engine = get_engine(connection_string=connection_string, env=env)
+    except ValueError as e:
+        logger.error(f"Error getting database engine: {e}")
+        return
     DbManager(engine=engine).import_data(
         force_download=force_download, delete_files=delete_files
     )
@@ -131,7 +116,12 @@ def create_ttls(connection_string: str) -> None:
     Args:
         connection_string (str): SQLAlchemy engine URL
     """
-    path_to_zip = TurtleCreator(create_engine(connection_string)).create_ttls()
+    try:
+        engine = get_engine(connection_string=connection_string)
+    except ValueError as e:
+        logger.error(f"Error getting database engine: {e}")
+        return
+    path_to_zip = TurtleCreator(engine).create_ttls()
     click.echo(
         f"Path to the zip file containing all generated Turtle files. {path_to_zip}"
     )
