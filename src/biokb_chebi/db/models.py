@@ -34,8 +34,8 @@ class Compound(Base):
     __tablename__ = f"{TABLE_PREFIX}compound"
     __table_args__ = {
         "comment": "Compound",
-        "mysql_charset": "utf8",
-        "mysql_collate": "utf8_unicode_ci",
+        "mysql_charset": "utf8mb4",
+        "mysql_collate": "utf8mb4_general_ci",
     }
     id: Mapped[int] = mapped_column(primary_key=True)
 
@@ -85,8 +85,8 @@ class ChemicalData(Base):
     __tablename__ = f"{TABLE_PREFIX}chemical_data"
     __table_args__ = {
         "comment": "Chemical data",
-        "mysql_charset": "utf8",
-        "mysql_collate": "utf8_unicode_ci",
+        "mysql_charset": "utf8mb4",
+        "mysql_collate": "utf8mb4_general_ci",
     }
 
     id: Mapped[int] = mapped_column(primary_key=True)
@@ -126,8 +126,8 @@ class Comment(Base):
     __tablename__ = f"{TABLE_PREFIX}comment"
     __table_args__ = {
         "comment": "Comment",
-        "mysql_charset": "utf8",
-        "mysql_collate": "utf8_unicode_ci",
+        "mysql_charset": "utf8mb4",
+        "mysql_collate": "utf8mb4_general_ci",
     }
 
     id: Mapped[int] = mapped_column(primary_key=True)
@@ -156,8 +156,8 @@ class DatabaseAccession(Base):
     __tablename__ = f"{TABLE_PREFIX}database_accession"
     __table_args__ = {
         "comment": "Database accession",
-        "mysql_charset": "utf8",
-        "mysql_collate": "utf8_unicode_ci",
+        "mysql_charset": "utf8mb4",
+        "mysql_collate": "utf8mb4_general_ci",
     }
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
@@ -189,8 +189,8 @@ class Name(Base):
     __tablename__ = f"{TABLE_PREFIX}name"
     __table_args__ = {
         "comment": "Name",
-        "mysql_charset": "utf8",
-        "mysql_collate": "utf8_unicode_ci",
+        "mysql_charset": "utf8mb4",
+        "mysql_collate": "utf8mb4_general_ci",
     }
 
     id: Mapped[int] = mapped_column(primary_key=True)
@@ -211,7 +211,7 @@ class Name(Base):
 
     def __repr__(self) -> str:
         """String representation of the Name object."""
-        return f"<Name(id={self.id!r}, type='{self.type!r}'," f" name='{self.name!r}')>"
+        return f"<Name(id={self.id!r}, type='{self.type!r}', name='{self.name!r}')>"
 
 
 class RelationType(Base):
@@ -220,8 +220,8 @@ class RelationType(Base):
     __tablename__ = f"{TABLE_PREFIX}relation_type"
     __table_args__ = {
         "comment": "Relation Type",
-        "mysql_charset": "utf8",
-        "mysql_collate": "utf8_unicode_ci",
+        "mysql_charset": "utf8mb4",
+        "mysql_collate": "utf8mb4_general_ci",
     }
 
     id: Mapped[int] = mapped_column(primary_key=True)
@@ -244,8 +244,8 @@ class Relation(Base):
     __tablename__ = f"{TABLE_PREFIX}relation"
     __table_args__ = {
         "comment": "Relation",
-        "mysql_charset": "utf8",
-        "mysql_collate": "utf8_unicode_ci",
+        "mysql_charset": "utf8mb4",
+        "mysql_collate": "utf8mb4_general_ci",
     }
     id: Mapped[int] = mapped_column(primary_key=True)
     evidence_accession: Mapped[Optional[str]] = mapped_column(String(7))
@@ -288,8 +288,8 @@ class Reference(Base):
     __tablename__ = f"{TABLE_PREFIX}reference"
     __table_args__ = {
         "comment": "Reference",
-        "mysql_charset": "utf8",
-        "mysql_collate": "utf8_unicode_ci",
+        "mysql_charset": "utf8mb4",
+        "mysql_collate": "utf8mb4_general_ci",
     }
     id: Mapped[int] = mapped_column(primary_key=True)
     location_in_ref: Mapped[Optional[str]] = mapped_column(String(255))
@@ -318,8 +318,8 @@ class Structure(Base):
     __tablename__ = f"{TABLE_PREFIX}structure"
     __table_args__ = {
         "comment": "Structure",
-        "mysql_charset": "utf8",
-        "mysql_collate": "utf8_unicode_ci",
+        "mysql_charset": "utf8mb4",
+        "mysql_collate": "utf8mb4_general_ci",
     }
     id: Mapped[int] = mapped_column(primary_key=True)
 
@@ -356,8 +356,8 @@ class Source(Base):
     __tablename__ = f"{TABLE_PREFIX}source"
     __table_args__ = {
         "comment": "Source",
-        "mysql_charset": "utf8",
-        "mysql_collate": "utf8_unicode_ci",
+        "mysql_charset": "utf8mb4",
+        "mysql_collate": "utf8mb4_general_ci",
     }
 
     id: Mapped[int] = mapped_column(primary_key=True)
@@ -387,8 +387,8 @@ class Status(Base):
     __tablename__ = f"{TABLE_PREFIX}status"
     __table_args__ = {
         "comment": "Status",
-        "mysql_charset": "utf8",
-        "mysql_collate": "utf8_unicode_ci",
+        "mysql_charset": "utf8mb4",
+        "mysql_collate": "utf8mb4_general_ci",
     }
 
     id: Mapped[int] = mapped_column(primary_key=True)
