@@ -165,3 +165,4 @@ tests/data/ttls.zip
 uv.lock
 tests/dbs/test.db
 docs/imgs/not_listed
+.env_localhost
