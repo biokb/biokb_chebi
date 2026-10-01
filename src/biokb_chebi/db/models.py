@@ -1,7 +1,7 @@
 """CHEBI model definition."""
 
 import datetime
-from typing import List, Optional
+from typing import Optional
 
 from sqlalchemy import ForeignKey, Integer, String, Text
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
@@ -60,16 +60,16 @@ class Compound(Base):
     # relationships
     status: Mapped[Optional["Status"]] = relationship(back_populates="compounds")
 
-    chemical_data: Mapped[List["ChemicalData"]] = relationship(
+    chemical_data: Mapped[list["ChemicalData"]] = relationship(
         back_populates="compound"
     )
-    comments: Mapped[List["Comment"]] = relationship(back_populates="compound")
-    database_accessions: Mapped[List["DatabaseAccession"]] = relationship(
+    comments: Mapped[list["Comment"]] = relationship(back_populates="compound")
+    database_accessions: Mapped[list["DatabaseAccession"]] = relationship(
         back_populates="compound"
     )
-    names: Mapped[List["Name"]] = relationship(back_populates="compound")
-    references: Mapped[List["Reference"]] = relationship(back_populates="compound")
-    structures: Mapped[List["Structure"]] = relationship(back_populates="compound")
+    names: Mapped[list["Name"]] = relationship(back_populates="compound")
+    references: Mapped[list["Reference"]] = relationship(back_populates="compound")
+    structures: Mapped[list["Structure"]] = relationship(back_populates="compound")
 
     def __repr__(self) -> str:
         """String representation of the Compound object."""
@@ -231,7 +231,7 @@ class RelationType(Base):
     description: Mapped[Optional[str]] = mapped_column(String(255))
 
     # relationships
-    relations: Mapped[List["Relation"]] = relationship(back_populates="relation_type")
+    relations: Mapped[list["Relation"]] = relationship(back_populates="relation_type")
 
     def __repr__(self) -> str:
         """String representation of the RelationType object."""
@@ -336,7 +336,7 @@ class Structure(Base):
     # relationships
     compound: Mapped[Compound] = relationship(back_populates="structures")
     status: Mapped["Status"] = relationship(back_populates="structures")
-    chemical_data: Mapped[List["ChemicalData"]] = relationship(
+    chemical_data: Mapped[list["ChemicalData"]] = relationship(
         back_populates="structure"
     )
 
@@ -368,9 +368,9 @@ class Source(Base):
     description: Mapped[Optional[str]] = mapped_column(Text)
 
     # relationships
-    references: Mapped[List[Reference]] = relationship(back_populates="source")
-    relations: Mapped[List["Relation"]] = relationship(back_populates="evidence_source")
-    database_accessions: Mapped[List[DatabaseAccession]] = relationship(
+    references: Mapped[list[Reference]] = relationship(back_populates="source")
+    relations: Mapped[list["Relation"]] = relationship(back_populates="evidence_source")
+    database_accessions: Mapped[list[DatabaseAccession]] = relationship(
         back_populates="source"
     )
 
@@ -397,15 +397,15 @@ class Status(Base):
 
     # relationships
 
-    compounds: Mapped[List[Compound]] = relationship(back_populates="status")
-    chemical_data: Mapped[List[ChemicalData]] = relationship(back_populates="status")
-    relations: Mapped[List[Relation]] = relationship(back_populates="status")
-    names: Mapped[List[Name]] = relationship(back_populates="status")
-    database_accessions: Mapped[List[DatabaseAccession]] = relationship(
+    compounds: Mapped[list[Compound]] = relationship(back_populates="status")
+    chemical_data: Mapped[list[ChemicalData]] = relationship(back_populates="status")
+    relations: Mapped[list[Relation]] = relationship(back_populates="status")
+    names: Mapped[list[Name]] = relationship(back_populates="status")
+    database_accessions: Mapped[list[DatabaseAccession]] = relationship(
         back_populates="status"
     )
-    comments: Mapped[List[Comment]] = relationship(back_populates="status")
-    structures: Mapped[List[Structure]] = relationship(back_populates="status")
+    comments: Mapped[list[Comment]] = relationship(back_populates="status")
+    structures: Mapped[list[Structure]] = relationship(back_populates="status")
 
     def __repr__(self) -> str:
         """String representation of the Status object."""

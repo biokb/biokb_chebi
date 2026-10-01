@@ -186,15 +186,19 @@ class TurtleCreator:
             )
 
             for name in tqdm(names):
-                node_label = "Name" + name.type.capitalize().replace(" ", "")
                 chebi_name = ns.NAME_NS[str(name.id)]
-                graph.add((chebi_name, RDF.type, ns.NODE_NS[node_label]))
                 graph.add((chebi_name, RDF.type, ns.NODE_NS["OtherName"]))
                 graph.add((chebi_name, RDF.type, ns.NODE_NS[BASIC_NODE_LABEL]))
                 compound = URIRef(ns.CHEBI_NS[str(name.compound_id)])
                 graph.add((compound, ns.REL_NS["HAS_NAME"], chebi_name))
 
-                for column in ["adapted", "language_code", "ascii_name", "status_id"]:
+                for column in [
+                    "adapted",
+                    "language_code",
+                    "ascii_name",
+                    "status_id",
+                    "type",
+                ]:
                     value = getattr(name, column)
                     datatype = XSD.string if isinstance(value, str) else XSD.integer
                     graph.add(
