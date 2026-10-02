@@ -12,7 +12,7 @@ from biokb_chebi.constants import TABLE_PREFIX
 class Base(DeclarativeBase):
     """Base class db schema."""
 
-    pass
+    pass  # noqa: PIE790
 
 
 class Compound(Base):
@@ -32,7 +32,7 @@ class Compound(Base):
     """
 
     __tablename__ = f"{TABLE_PREFIX}compound"
-    __table_args__ = {
+    __table_args__ = {  # noqa: RUF012
         "comment": "Compound",
         "mysql_charset": "utf8mb4",
         "mysql_collate": "utf8mb4_general_ci",
@@ -83,7 +83,7 @@ class ChemicalData(Base):
     """Class definition for the chebi_chemical_data table."""
 
     __tablename__ = f"{TABLE_PREFIX}chemical_data"
-    __table_args__ = {
+    __table_args__ = {  # noqa: RUF012
         "comment": "Chemical data",
         "mysql_charset": "utf8mb4",
         "mysql_collate": "utf8mb4_general_ci",
@@ -124,7 +124,7 @@ class Comment(Base):
     """Class definition for the chebi_comment table."""
 
     __tablename__ = f"{TABLE_PREFIX}comment"
-    __table_args__ = {
+    __table_args__ = {  # noqa: RUF012
         "comment": "Comment",
         "mysql_charset": "utf8mb4",
         "mysql_collate": "utf8mb4_general_ci",
@@ -154,7 +154,7 @@ class DatabaseAccession(Base):
     """Class definition for the chebi_database_accession table."""
 
     __tablename__ = f"{TABLE_PREFIX}database_accession"
-    __table_args__ = {
+    __table_args__ = {  # noqa: RUF012
         "comment": "Database accession",
         "mysql_charset": "utf8mb4",
         "mysql_collate": "utf8mb4_general_ci",
@@ -187,7 +187,7 @@ class Name(Base):
     """Class definition for the chebi_name table."""
 
     __tablename__ = f"{TABLE_PREFIX}name"
-    __table_args__ = {
+    __table_args__ = {  # noqa: RUF012
         "comment": "Name",
         "mysql_charset": "utf8mb4",
         "mysql_collate": "utf8mb4_general_ci",
@@ -218,7 +218,7 @@ class RelationType(Base):
     """Class definition for the chebi_relation_type table."""
 
     __tablename__ = f"{TABLE_PREFIX}relation_type"
-    __table_args__ = {
+    __table_args__ = {  # noqa: RUF012
         "comment": "Relation Type",
         "mysql_charset": "utf8mb4",
         "mysql_collate": "utf8mb4_general_ci",
@@ -242,7 +242,7 @@ class Relation(Base):
     """Class definition for the chebi_relation table."""
 
     __tablename__ = f"{TABLE_PREFIX}relation"
-    __table_args__ = {
+    __table_args__ = {  # noqa: RUF012
         "comment": "Relation",
         "mysql_charset": "utf8mb4",
         "mysql_collate": "utf8mb4_general_ci",
@@ -286,7 +286,7 @@ class Reference(Base):
     """Class definition for the chebi_reference table."""
 
     __tablename__ = f"{TABLE_PREFIX}reference"
-    __table_args__ = {
+    __table_args__ = {  # noqa: RUF012
         "comment": "Reference",
         "mysql_charset": "utf8mb4",
         "mysql_collate": "utf8mb4_general_ci",
@@ -316,7 +316,7 @@ class Structure(Base):
     """Class definition for the chebi_structure table."""
 
     __tablename__ = f"{TABLE_PREFIX}structure"
-    __table_args__ = {
+    __table_args__ = {  # noqa: RUF012
         "comment": "Structure",
         "mysql_charset": "utf8mb4",
         "mysql_collate": "utf8mb4_general_ci",
@@ -354,7 +354,7 @@ class Source(Base):
     """Class definition for the chebi_source table."""
 
     __tablename__ = f"{TABLE_PREFIX}source"
-    __table_args__ = {
+    __table_args__ = {  # noqa: RUF012
         "comment": "Source",
         "mysql_charset": "utf8mb4",
         "mysql_collate": "utf8mb4_general_ci",
@@ -385,7 +385,7 @@ class Status(Base):
     """Class definition for the chebi_status table."""
 
     __tablename__ = f"{TABLE_PREFIX}status"
-    __table_args__ = {
+    __table_args__ = {  # noqa: RUF012
         "comment": "Status",
         "mysql_charset": "utf8mb4",
         "mysql_collate": "utf8mb4_general_ci",

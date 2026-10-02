@@ -4,7 +4,7 @@ import logging
 import os.path
 import re
 import shutil
-from collections.abc import Callable
+from collections.abc import Callable, Sequence
 from typing import Optional
 
 import pandas as pd
@@ -214,7 +214,7 @@ class TurtleCreator:
 
     def __create_xrefs_ttl(
         self,
-        include: list[str] = [
+        include: Sequence[str] = [
             "gxa.expt",
             "gxa.expt",
             "biomodels.db",
@@ -227,7 +227,7 @@ class TurtleCreator:
             "rhea",
             "eccode",
         ],
-        exclude: list[str] = [],
+        exclude: Sequence[str] = [],
     ) -> list[str]:
         """Create xref turtle file.
 
