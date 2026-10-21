@@ -59,6 +59,7 @@ class TurtleCreator:
         """
         connection_str = os.getenv("CONNECTION_STR", DB_DEFAULT_CONNECTION_STR)
         self.__engine = engine if engine else create_engine(str(connection_str))
+        logger.info(f"Using connection string: {self.__engine}")
         self.Session = sessionmaker(bind=self.__engine)
         self.__ttls_folder = EXPORT_FOLDER
 
@@ -269,15 +270,29 @@ class TurtleCreator:
                 )
                 for ref in tqdm(references, desc=f"Creating xrefs for {source.prefix}"):
                     compound = URIRef(ns.CHEBI_NS[str(ref.compound_id)])
-                    xref = ns.REF_NS_DICT[source.prefix][str(ref.accession_number)]
-                    node_label = "Xref" + re.sub(r"\W", "", source.prefix.capitalize())
-                    graph.add((xref, RDF.type, ns.NODE_NS[node_label]))
-                    graph.add((compound, ns.REL_NS["HAS_XREF"], xref))
+                    xref_uri: URIRef = self.get_uri(
+                        source.prefix, str(ref.accession_number)
+                    )
+                    graph.add((compound, ns.REL_NS["HAS_XREF"], xref_uri))
                 ttl_paths.append(ttl_path)
                 if len(graph):
                     graph.serialize(ttl_path, format="turtle")
                 del graph
             return ttl_paths
+
+    def get_uri(self, source_prefix: str, accession_number: str) -> URIRef:
+        """Get the URI for a given source prefix and accession number.
+
+        Args:
+            source_prefix (str): The source prefix.
+            accession_number (str): The accession number.
+
+        Returns:
+            URIRef: The URI for the given source prefix and accession number.
+        """
+        if source_prefix == "go":
+            accession_number = accession_number.replace(":", "_")
+        return ns.REF_NS_DICT[source_prefix][accession_number]
 
     def __create_compound_relations_ttl(self) -> str:
         """Create compound relation turtle file.

@@ -14,7 +14,7 @@ RDF_NS = Namespace("http://www.w3.org/1999/02/22-rdf-syntax-ns#")
 PATENT_NS = Namespace(f"{BIOKB_URI}/patent#")
 INCHI_NS = Namespace("http://rdf.ncbi.nlm.nih.gov/pubchem/inchikey/")
 UNIPROT_NS = Namespace("http://purl.uniprot.org/uniprot/")
-GO_NS = Namespace("http://purl.obolibrary.org/obo/GO_")
+# GO_NS = Namespace("http://purl.obolibrary.org/obo/GO_")
 
 REF_NS_DICT: dict[str, Namespace] = {
     "biomodels.db": Namespace(
@@ -33,7 +33,7 @@ REF_NS_DICT: dict[str, Namespace] = {
         "https://www.brenda-enzymes.org/enzyme.php?ecno="
     ),  # db of enzyme nomenclature
     # Gene Ontology
-    "go": Namespace("https://amigo.geneontology.org/amigo/term/"),
+    "go": Namespace("http://purl.obolibrary.org/obo/"),
     "gxa.expt": Namespace(
         "https://www.ebi.ac.uk/gxa/experiments/"
     ),  # Gene Expression Atlas experiments
@@ -80,7 +80,7 @@ REF_NS_DICT: dict[str, Namespace] = {
         "https://www.vmh.life/#metabolite/"
     ),  # db of human metabolism
     "brenda.ligand": Namespace(
-        "https://www.brenda-enzymes.de/ligand.php?brenda_ligand_id="
+        "https://www.brenda-enzymes.org/ligand.php?brenda_ligand_id="
     ),  # db of enzyme ligands
     "bindingdb": Namespace(
         "http://www.bindingdb.org/rwd/entry/"

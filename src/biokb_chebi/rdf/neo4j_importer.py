@@ -69,6 +69,9 @@ class Neo4jImporter:
                 }} IN TRANSACTIONS OF 1000 ROWS;"""
             cypher = cast(LiteralString, cypher)  # type: ignore
             session.run(cypher).consume()
+            session.run(
+                "MATCH (n:DbChEBI:Compound)-[:HAS_XREF]-(m) DETACH DELETE m"
+            ).consume()
 
     def _set_test_driver(self, driver: Driver) -> None:
         """Overwrite the Neo4j driver. Mainly for testing purposes.
