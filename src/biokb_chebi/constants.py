@@ -3,7 +3,7 @@ from pathlib import Path
 
 # standard for all biokb projects, but individual set
 PROJECT_NAME = "chebi"
-BASIC_NODE_LABEL = "DbChEBI"
+BASIC_NODE_LABEL = "DbChebi"
 # standard for all biokb projects
 ORGANIZATION = "biokb"
 LIBRARY_NAME = f"{ORGANIZATION}_{PROJECT_NAME}"
