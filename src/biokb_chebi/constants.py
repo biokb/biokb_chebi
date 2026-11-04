@@ -24,7 +24,7 @@ os.makedirs(DATA_FOLDER, exist_ok=True)
 
 # not standard for all biokb projects
 
-BASE_URL_DOWNLOAD = "https://ftp.ebi.ac.uk/pub/databases/chebi/flat_files"
+BASE_URL_DOWNLOAD = ("ftp.ebi.ac.uk", "/pub/databases/chebi/flat_files")
 
 # files on ftp server in FTP_DIR
 CHEMICAL_DATA_FILE = "chemical_data.tsv.gz"

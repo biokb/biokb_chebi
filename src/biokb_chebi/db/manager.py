@@ -1,11 +1,10 @@
 """MySQL database importer module."""
 
+import ftplib
 import logging
 import os
-from typing import Optional
 
 import pandas as pd
-import requests
 from sqlalchemy import Engine, create_engine, text
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.orm.session import Session
@@ -122,62 +121,35 @@ class DbManager:
                     logger.info("Removed file %s", path_to_delete)
         return result_dict
 
-    # def __download_data(self, force_download: bool = False) -> None:
-    #     """Downloads chebi data from it's ftp server.
-
-    #     Args:
-    #         force_download (bool, optional): If True, will force download the data, even if
-    #         files already exist. If False, it will skip the downloading part if files
-    #         already exist locally. Defaults to False.
-    #     """
-    #     logger.info("Start download of data")
-    #     files_exists = 0
-    #     files_downloaded = 0
-    #     for file_name in tqdm(table_file_dict.values()):
-    #         path_to_download = os.path.join(self.__data_folder, file_name)
-    #         if os.path.exists(path_to_download) and not force_download:
-    #             files_exists += 1
-    #             continue
-    #         url = f"{BASE_URL_DOWNLOAD}/{file_name}"
-
-    #         with requests.get(url, stream=True) as r:
-    #             r.raise_for_status()
-    #             with open(path_to_download, "wb") as f:
-    #                 for chunk in r.iter_content(chunk_size=8192):
-    #                     if chunk:
-    #                         f.write(chunk)
-    #         files_downloaded += 1
-    #     logger.info("Files already exist: %d", files_exists)
-    #     logger.info("Files downloaded: %d", files_downloaded)
-
     def __download_data(self, force_download: bool = False) -> None:
-        """Downloads chebi data from its ftp server."""
+        """Downloads chebi data from its ftp server.
+
+        Args:
+            force_download (bool, optional): If True, will force download the data, even if
+            files already exist. If False, it will skip the downloading part if files
+            already exist locally. Defaults to False.
+        """
         logger.info("Start download of data")
         files_exists = 0
         files_downloaded = 0
 
-        # Add a custom User-Agent to prevent getting blocked by server filters
-        headers = {"User-Agent": "BioKB-ChEBI-Client/1.0 (Scientific Research)"}
+        # Parse host and path from BASE_URL_DOWNLOAD (e.g. ftp://ftp.ebi.ac.uk/pub/databases/chebi/flat_files)
+        ftp_host, ftp_dir = BASE_URL_DOWNLOAD
+        with ftplib.FTP(ftp_host) as ftp:
+            ftp.login()  # Anonymous login by default for public EBI FTP
+            if ftp_dir:
+                ftp.cwd(ftp_dir)
 
-        for file_name in tqdm(table_file_dict.values()):
-            path_to_download = os.path.join(self.__data_folder, file_name)
-            if os.path.exists(path_to_download) and not force_download:
-                files_exists += 1
-                continue
-            url = f"{BASE_URL_DOWNLOAD}/{file_name}"
+            for file_name in tqdm(table_file_dict.values()):
+                path_to_download = os.path.join(self.__data_folder, file_name)
+                if os.path.exists(path_to_download) and not force_download:
+                    files_exists += 1
+                    continue
 
-            try:
-                # Added timeout and headers to prevent connection hangs and rejections
-                with requests.get(url, headers=headers, stream=True, timeout=30) as r:
-                    r.raise_for_status()
-                    with open(path_to_download, "wb") as f:
-                        for chunk in r.iter_content(chunk_size=8192):
-                            if chunk:
-                                f.write(chunk)
+                with open(path_to_download, mode="wb") as f:
+                    ftp.retrbinary(f"RETR {file_name}", f.write)
+
                 files_downloaded += 1
-            except requests.exceptions.RequestException as e:
-                logger.error("Failed to download %s from %s: %s", file_name, url, e)
-                raise
 
         logger.info("Files already exist: %d", files_exists)
         logger.info("Files downloaded: %d", files_downloaded)
