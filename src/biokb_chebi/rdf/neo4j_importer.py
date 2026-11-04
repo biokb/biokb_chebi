@@ -138,7 +138,7 @@ class Neo4jImporter:
         neo4j_db = Graph(store=Neo4jStore(config=config))
         return neo4j_db
 
-    def import_ttls(self, delete_existing_graph: bool = True) -> bool:
+    def import_ttls(self, delete_existing_graph: bool = False) -> bool:
         """Import all turtle file in Neo4J from zipped turtle files.
 
         Args:
