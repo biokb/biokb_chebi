@@ -3,10 +3,13 @@ import os
 from typing import Optional
 
 import click
+import neo4j
+from dotenv import load_dotenv
 
 from biokb_chebi import __version__
 from biokb_chebi.api.main import run_api
 from biokb_chebi.constants import (
+    NEO4J_PASSWORD,
     NEO4J_URI,
     NEO4J_USER,
 )
@@ -129,32 +132,73 @@ def create_ttls(connection_string: str) -> None:
     )
 
 
-neo4j_uri = os.getenv("NEO4J_URI", NEO4J_URI)
-neo4j_user = os.getenv("NEO4J_USER", NEO4J_USER)
-
-
 @main.command("import-neo4j")
 @click.option(
     "--uri",
     "-i",
-    default=neo4j_uri,
-    help=f'Neo4j database URI [default:"{neo4j_uri}"]',
+    default=None,
+    help="Neo4j database URI",
 )
+@click.option("--user", "-u", default=None, help="Neo4j username")
 @click.option(
-    "--user", "-u", default=neo4j_user, help=f'Neo4j username [default="{neo4j_user}"]'
+    "-e",
+    "--env",
+    type=str,
+    default=None,
+    help="Environment file to load for configuration",
 )
 @click.option("--password", "-p", default=None, help="Neo4j password")
-def import_neo4j(uri: str, user: str, password: Optional[str]) -> None:
-    """Import TTL files into Neo4j database."""
+def import_neo4j(
+    uri: str, user: str, password: Optional[str], env: Optional[str]
+) -> None:
+    """Import TTL files into Neo4j database.
+
+    Args:
+        uri (str): Neo4j database URI
+        user (str): Neo4j username
+        password (Optional[str]): Neo4j password
+        env (Optional[str]): Environment file to load for configuration
+    """
+    if password:
+        click.echo(
+            "It is not recommended to provide the Neo4j"
+            " password via command line. Instead create a .env file with the credentials."
+        )
+    # read Neo4j credentials from environment variables if available
+    if env is not None and os.path.exists(env):
+        click.echo(f"Loading environment variables from {env}")
+        load_dotenv(env, override=True)
+    elif os.path.exists(".env"):
+        click.echo("Loading environment variables from .env")
+        load_dotenv(".env", override=True)
+    uri = uri or os.getenv("NEO4J_URI", uri) or NEO4J_URI
+    user = user or os.getenv("NEO4J_USER", user) or NEO4J_USER
+    password = password or os.getenv("NEO4J_PASSWORD", password) or NEO4J_PASSWORD
+    if uri is None:
+        click.echo(
+            "NEO4J_URI is not set. Please provide it via command line or environment variable."
+        )
+        return
+    if user is None:
+        click.echo(
+            "NEO4J_USER is not set. Please provide it via command line or environment variable."
+        )
+        return
+
+    # if it still hasn't been set, prompt the user for the password
     if password is None:
         password = click.prompt(
-            "Please enter the Neo4j password (input will be hidden)", hide_input=True
+            "Please enter the Neo4j password (input will be hidden)",
+            hide_input=True,
         )
+    if uri and user and password:
+        try:
+            ni = Neo4jImporter(neo4j_uri=uri, neo4j_user=user, neo4j_pwd=password)
+            ni.import_ttls()
+        except neo4j.exceptions.ServiceUnavailable as e:
+            click.echo(f"Failed to import TTL files into Neo4j: {e}")
     else:
-        click.echo(
-            "It is not recommended to provide the Neo4j password via command line."
-        )
-    Neo4jImporter(neo4j_uri=uri, neo4j_user=user, neo4j_pwd=password).import_ttls()
+        click.echo("Missing Neo4j credentials. Please provide uri, user, and password.")
 
 
 @main.command("run-server")
