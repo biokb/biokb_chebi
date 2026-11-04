@@ -2,11 +2,10 @@
 
 import logging
 import os
-from typing import Dict, Optional
+from typing import Optional
 
 import pandas as pd
 import requests
-from httpx import delete
 from sqlalchemy import Engine, create_engine, text
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.orm.session import Session
@@ -36,27 +35,27 @@ logging.basicConfig(
 )
 logger: logging.Logger = logging.getLogger(__name__)
 
+table_file_dict: dict[str, str] = {
+    models.Status.__tablename__: STATUS_FILE,
+    models.Source.__tablename__: SOURCE_FILE,
+    models.RelationType.__tablename__: RELATION_TYPE_FILE,
+    models.Compound.__tablename__: COMPOUND_FILE,
+    models.Structure.__tablename__: STRUCTURE_FILE,
+    models.ChemicalData.__tablename__: CHEMICAL_DATA_FILE,
+    models.Comment.__tablename__: COMMENT_FILE,
+    models.DatabaseAccession.__tablename__: DATABASE_ACCESSION_FILE,
+    models.Name.__tablename__: NAME_FILE,
+    models.Relation.__tablename__: RELATION_FILE,
+    models.Reference.__tablename__: REFERENCE_FILE,
+}
+
 
 class DbManager:
     """Database import for ChEBI data."""
 
-    table_file_dict: dict[str, str] = {
-        models.Status.__tablename__: STATUS_FILE,
-        models.Source.__tablename__: SOURCE_FILE,
-        models.RelationType.__tablename__: RELATION_TYPE_FILE,
-        models.Compound.__tablename__: COMPOUND_FILE,
-        models.Structure.__tablename__: STRUCTURE_FILE,
-        models.ChemicalData.__tablename__: CHEMICAL_DATA_FILE,
-        models.Comment.__tablename__: COMMENT_FILE,
-        models.DatabaseAccession.__tablename__: DATABASE_ACCESSION_FILE,
-        models.Name.__tablename__: NAME_FILE,
-        models.Relation.__tablename__: RELATION_FILE,
-        models.Reference.__tablename__: REFERENCE_FILE,
-    }
-
     def __init__(
         self,
-        engine: Optional[Engine] = None,
+        engine: Engine | None = None,
     ):
         """Init DatabaseImporter
 
@@ -68,12 +67,12 @@ class DbManager:
         """
         self.__data_folder: str = DATA_FOLDER
         connection_str: str = os.getenv("CONNECTION_STR", DB_DEFAULT_CONNECTION_STR)
-        self.__engine: Engine = engine if engine else create_engine(str(connection_str))
-        if self.__engine.dialect.name == "sqlite":
-            with self.__engine.connect() as connection:
+        self._engine: Engine = engine if engine else create_engine(str(connection_str))
+        if self._engine.dialect.name == "sqlite":
+            with self._engine.connect() as connection:
                 connection.execute(text("pragma foreign_keys=ON"))
-        self.Session: sessionmaker[Session] = sessionmaker(bind=self.__engine)
-        logger.info("Engine: %s", self.__engine)
+        self.Session: sessionmaker[Session] = sessionmaker(bind=self._engine)
+        logger.info("Engine: %s", self._engine)
 
     @property
     def session(self) -> Session:
@@ -93,12 +92,12 @@ class DbManager:
 
     def __create_empty_db(self) -> None:
         """Creates an empty database by delete the old and recreate a new."""
-        Base.metadata.drop_all(self.__engine)
-        Base.metadata.create_all(self.__engine)
+        Base.metadata.drop_all(self._engine)
+        Base.metadata.create_all(self._engine)
 
     def import_data(
         self, force_download: bool = False, delete_files: bool = False
-    ) -> Dict[str, int]:
+    ) -> dict[str, int]:
         """Import all data in MySQL database.
 
         Args:
@@ -116,52 +115,84 @@ class DbManager:
         self.__create_empty_db()
         result_dict = self.__insert_data()
         if delete_files:
-            for file_name in self.table_file_dict.values():
+            for file_name in table_file_dict.values():
                 path_to_delete = os.path.join(self.__data_folder, file_name)
                 if os.path.exists(path_to_delete):
                     os.remove(path_to_delete)
                     logger.info("Removed file %s", path_to_delete)
         return result_dict
 
-    def __download_data(self, force_download: bool = False) -> None:
-        """Downloads chebi data from it's ftp server.
+    # def __download_data(self, force_download: bool = False) -> None:
+    #     """Downloads chebi data from it's ftp server.
 
-        Args:
-            redownload (bool, optional): If True, will force download the data, even if
-            files already exist. If False, it will skip the downloading part if files
-            already exist locally. Defaults to False.
-        """
+    #     Args:
+    #         force_download (bool, optional): If True, will force download the data, even if
+    #         files already exist. If False, it will skip the downloading part if files
+    #         already exist locally. Defaults to False.
+    #     """
+    #     logger.info("Start download of data")
+    #     files_exists = 0
+    #     files_downloaded = 0
+    #     for file_name in tqdm(table_file_dict.values()):
+    #         path_to_download = os.path.join(self.__data_folder, file_name)
+    #         if os.path.exists(path_to_download) and not force_download:
+    #             files_exists += 1
+    #             continue
+    #         url = f"{BASE_URL_DOWNLOAD}/{file_name}"
+
+    #         with requests.get(url, stream=True) as r:
+    #             r.raise_for_status()
+    #             with open(path_to_download, "wb") as f:
+    #                 for chunk in r.iter_content(chunk_size=8192):
+    #                     if chunk:
+    #                         f.write(chunk)
+    #         files_downloaded += 1
+    #     logger.info("Files already exist: %d", files_exists)
+    #     logger.info("Files downloaded: %d", files_downloaded)
+
+    def __download_data(self, force_download: bool = False) -> None:
+        """Downloads chebi data from its ftp server."""
         logger.info("Start download of data")
         files_exists = 0
         files_downloaded = 0
-        for file_name in tqdm(self.table_file_dict.values()):
+
+        # Add a custom User-Agent to prevent getting blocked by server filters
+        headers = {"User-Agent": "BioKB-ChEBI-Client/1.0 (Scientific Research)"}
+
+        for file_name in tqdm(table_file_dict.values()):
             path_to_download = os.path.join(self.__data_folder, file_name)
             if os.path.exists(path_to_download) and not force_download:
                 files_exists += 1
                 continue
             url = f"{BASE_URL_DOWNLOAD}/{file_name}"
 
-            with requests.get(url, stream=True) as r:
-                r.raise_for_status()
-                with open(path_to_download, "wb") as f:
-                    for chunk in r.iter_content(chunk_size=8192):
-                        if chunk:
-                            f.write(chunk)
-            files_downloaded += 1
+            try:
+                # Added timeout and headers to prevent connection hangs and rejections
+                with requests.get(url, headers=headers, stream=True, timeout=30) as r:
+                    r.raise_for_status()
+                    with open(path_to_download, "wb") as f:
+                        for chunk in r.iter_content(chunk_size=8192):
+                            if chunk:
+                                f.write(chunk)
+                files_downloaded += 1
+            except requests.exceptions.RequestException as e:
+                logger.error("Failed to download %s from %s: %s", file_name, url, e)
+                raise
+
         logger.info("Files already exist: %d", files_exists)
         logger.info("Files downloaded: %d", files_downloaded)
 
-    def __insert_data(self) -> Dict[str, int]:
+    def __insert_data(self) -> dict[str, int]:
         """Insert data in chebi db tables.
 
         Returns:
-            Dict[str, int]: table=key and number of inserted=value
+            dict[str, int]: table=key and number of inserted=value
         """
         logger.info("Insert data in database")
 
         inserted = {}
 
-        for table_name, file_name in tqdm(self.table_file_dict.items()):
+        for table_name, file_name in tqdm(table_file_dict.items()):
             file_path = os.path.join(self.__data_folder, file_name)
 
             usecols = None
@@ -189,7 +220,7 @@ class DbManager:
                     df[col] = pd.to_datetime(df[col], utc=True)
                 df.to_sql(
                     table_name,
-                    self.__engine,
+                    self._engine,
                     index=False,
                     if_exists="append",
                     chunksize=100000,
@@ -200,14 +231,14 @@ class DbManager:
 
 
 def import_data(
-    engine: Optional[Engine] = None,
+    engine: Engine | None = None,
     force_download: bool = False,
     delete_files: bool = False,
-) -> Dict[str, int]:
+) -> dict[str, int]:
     """Import all data in database.
 
     Args:
-        engine (Optional[Engine]): SQLAlchemy engine. Defaults to None.
+        engine (Engine | None): SQLAlchemy engine. Defaults to None.
         force_download (bool, optional): If True, will force download the data, even if
             files already exist. If False, it will skip the downloading part if files
             already exist locally. Defaults to False.
@@ -215,7 +246,7 @@ def import_data(
             Defaults to False.
 
     Returns:
-        Dict[str, int]: table=key and number of inserted=value
+        dict[str, int]: table=key and number of inserted=value
     """
     db_manager = DbManager(engine)
     return db_manager.import_data(
@@ -223,11 +254,19 @@ def import_data(
     )
 
 
-def get_session(engine: Optional[Engine] = None) -> Session:
+def get_engine() -> Engine:
+    """Get a new SQLAlchemy engine.
+
+    Returns:
+        Engine: SQLAlchemy engine
+    """
+    return DbManager()._engine
+
+
+def get_session() -> Session:
     """Get a new SQLAlchemy session.
 
     Returns:
         Session: SQLAlchemy session
     """
-    db_manager = DbManager(engine)
-    return db_manager.session
+    return DbManager().session
