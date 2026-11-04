@@ -111,7 +111,7 @@ class TurtleCreator:
         with self.Session() as session:
             compounds = session.query(
                 models.Compound.id,
-                models.Compound.ascii_name,
+                models.Compound.name,
                 models.Compound.source,
                 models.Compound.status_id,
                 models.Compound.definition,
@@ -123,7 +123,7 @@ class TurtleCreator:
                 graph.add((compound, RDF.type, ns.NODE_NS["Compound"]))
                 graph.add((compound, RDF.type, ns.NODE_NS[BASIC_NODE_LABEL]))
 
-                for column in ["ascii_name", "source", "status_id", "definition"]:
+                for column in ["name", "source", "status_id", "definition"]:
                     if not pd.isna(getattr(comp, column)):
                         graph.add(
                             (
