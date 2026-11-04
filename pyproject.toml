@@ -56,6 +56,7 @@ readthedocs = [
 
 docs = [
     "eralchemy[graphviz]>=1.5.0",
+    "mermaid-magic>=0.1.4",
     "mkdocs-jupyter>=0.25.1",
     "mkdocs-material>=9.7.1",
 ]
