@@ -3,6 +3,7 @@
 import ftplib
 import logging
 import os
+from time import sleep
 
 import pandas as pd
 from sqlalchemy import Engine, create_engine, text
@@ -135,24 +136,65 @@ class DbManager:
 
         # Parse host and path from BASE_URL_DOWNLOAD (e.g. ftp://ftp.ebi.ac.uk/pub/databases/chebi/flat_files)
         ftp_host, ftp_dir = BASE_URL_DOWNLOAD
-        with ftplib.FTP(ftp_host) as ftp:
+
+        for file_name in tqdm(table_file_dict.values()):
+            path_to_download = os.path.join(self.__data_folder, file_name)
+            if os.path.exists(path_to_download) and not force_download:
+                files_exists += 1
+                continue
+
+            sleep(
+                3
+            )  # Sleep for 3 second before downloading to avoid overwhelming the server
+
+            # Retry logic: download with exponential backoff
+            max_retries = 3
+            for attempt in range(max_retries):
+                try:
+                    self.__download_file(ftp_host, ftp_dir, file_name, path_to_download)
+                    files_downloaded += 1
+                    break
+                except (OSError, ftplib.Error) as e:
+                    if attempt < max_retries - 1:
+                        wait_time = 2**attempt * 5  # 5s, 10s, 20s
+                        logger.warning(
+                            "Download failed for %s (attempt %d/%d): %s. Retrying in %ds...",
+                            file_name,
+                            attempt + 1,
+                            max_retries,
+                            str(e),
+                            wait_time,
+                        )
+                        sleep(wait_time)
+                    else:
+                        logger.error(
+                            "Failed to download %s after %d attempts",
+                            file_name,
+                            max_retries,
+                        )
+                        raise
+
+        logger.info("Files already exist: %d", files_exists)
+        logger.info("Files downloaded: %d", files_downloaded)
+
+    def __download_file(
+        self, ftp_host: str, ftp_dir: str, file_name: str, path_to_download: str
+    ) -> None:
+        """Download a single file from FTP server.
+
+        Args:
+            ftp_host (str): FTP host address
+            ftp_dir (str): FTP directory path
+            file_name (str): Name of file to download
+            path_to_download (str): Local path where file should be saved
+        """
+        with ftplib.FTP(ftp_host, timeout=30) as ftp:
             ftp.login()  # Anonymous login by default for public EBI FTP
             if ftp_dir:
                 ftp.cwd(ftp_dir)
 
-            for file_name in tqdm(table_file_dict.values()):
-                path_to_download = os.path.join(self.__data_folder, file_name)
-                if os.path.exists(path_to_download) and not force_download:
-                    files_exists += 1
-                    continue
-
-                with open(path_to_download, mode="wb") as f:
-                    ftp.retrbinary(f"RETR {file_name}", f.write)
-
-                files_downloaded += 1
-
-        logger.info("Files already exist: %d", files_exists)
-        logger.info("Files downloaded: %d", files_downloaded)
+            with open(path_to_download, mode="wb") as f:
+                ftp.retrbinary(f"RETR {file_name}", f.write)
 
     def __insert_data(self) -> dict[str, int]:
         """Insert data in chebi db tables.
