@@ -1,6 +1,5 @@
 import os
 import subprocess
-import time
 
 import pytest
 from testcontainers.neo4j import Neo4jContainer

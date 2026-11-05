@@ -138,7 +138,7 @@ class Neo4jImporter:
         neo4j_db = Graph(store=Neo4jStore(config=config))
         return neo4j_db
 
-    def import_ttls(self, delete_existing_graph: bool = False) -> bool:
+    def import_neo4j(self, delete_existing_graph: bool = False) -> bool:
         """Import all turtle file in Neo4J from zipped turtle files.
 
         Args:
@@ -171,32 +171,8 @@ def import_neo4j(
     Returns:
         bool: True if import is successful.
     """
-    return import_ttls(
-        neo4j_uri=neo4j_uri,
-        neo4j_user=neo4j_user,
-        neo4j_pwd=neo4j_pwd,
-        delete_existing_graph=delete_existing_graph,
-    )
-
-
-def import_ttls(
-    neo4j_uri: str | None = None,
-    neo4j_user: str | None = None,
-    neo4j_pwd: str | None = None,
-    delete_existing_graph: bool = True,
-) -> bool:
-    """Import data into Neo4J from zipped turtle files.
-
-    Args:
-        neo4j_uri (str | None): URI of the Neo4j database.
-        neo4j_user (str | None): Username for Neo4j.
-        neo4j_pwd (str | None): Password for Neo4j.
-        delete_existing_graph (bool): delete existing graph before import.
-    Returns:
-        bool: True if import is successful.
-    """
     importer = Neo4jImporter(
         neo4j_uri=neo4j_uri, neo4j_user=neo4j_user, neo4j_pwd=neo4j_pwd
     )
-    result: bool = importer.import_ttls(delete_existing_graph=delete_existing_graph)
+    result: bool = importer.import_neo4j(delete_existing_graph=delete_existing_graph)
     return result

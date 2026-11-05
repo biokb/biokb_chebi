@@ -103,7 +103,7 @@ class TestDataImport:
 
     def test_import_data(self, dbm: DbManager) -> None:
         """Check if SQLite file exists if database is created."""
-        dbm.import_data(keep_files=True)
+        dbm.import_data()
         with dbm.Session() as session:
             assert session.query(models.ChemicalData).count() == 10
             assert session.query(models.Comment).count() == 3
@@ -123,7 +123,7 @@ class TestTurtleCreation:
 
     def test_create_turtle(self, dbm: DbManager, tc: TurtleCreator) -> None:
         """Check if Turtle file is created."""
-        dbm.import_data(keep_files=True)
+        dbm.import_data()
         path_to_zip_file = tc.create_ttls()
         path = Path(path_to_zip_file)
 
@@ -164,7 +164,7 @@ class TestNeo4jImport:
         if container_id is None:
             pytest.skip("Could not start Neo4j container.")
 
-        dbm.import_data(keep_files=True)
+        dbm.import_data()
         path_to_zip_file = tc.create_ttls()
 
         importer = Neo4jImporter(
@@ -173,7 +173,7 @@ class TestNeo4jImport:
             neo4j_pwd=NEO4J_PASSWORD,
         )
         importer._set_test_zipped_ttls_path(path_to_zip_file)
-        importer.import_ttls()
+        importer.import_neo4j()
 
         with importer.driver.session() as session:
             result: Result = session.run("MATCH (n:Compound) RETURN COUNT(n) AS count")

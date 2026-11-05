@@ -194,7 +194,7 @@ def import_neo4j(
     if uri and user and password:
         try:
             ni = Neo4jImporter(neo4j_uri=uri, neo4j_user=user, neo4j_pwd=password)
-            ni.import_ttls()
+            ni.import_neo4j()
         except neo4j.exceptions.ServiceUnavailable as e:
             click.echo(f"Failed to import TTL files into Neo4j: {e}")
     else:

@@ -208,7 +208,7 @@ async def import_neo4j(
                 ),
             )
         importer = Neo4jImporter(neo4j_uri=uri, neo4j_user=user, neo4j_pwd=password)
-        importer.import_ttls()
+        importer.import_neo4j()
     except Exception as e:
         logger.error(f"Error importing data into Neo4j: {e}")
         raise HTTPException(
