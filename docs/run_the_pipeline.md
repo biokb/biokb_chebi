@@ -41,7 +41,7 @@ http://localhost:8000/docs#/
 
 1. [Import data](http://localhost:8000/docs#/Database%20Management/import_data_import_data__post)
 2. [Export ttls](http://localhost:8000/docs#/Database%20Management/get_report_export_ttls__get)
-3. Run Neo4J (see below "[How to run Neo4J](#how-to-run-neo4j)")
+3. Run Neo4J (see below "[How to run Neo4J](how_to_run_neo4j.md)")
 4. [Import Neo4J](http://localhost:8000/docs#/Database%20Management/import_neo4j_import_neo4j__get)
 
 Be patient, each step takes several minutes.

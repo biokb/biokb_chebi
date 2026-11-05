@@ -7,8 +7,8 @@
 ## biokb_chebi.create_ttls
 ::: biokb_chebi.create_ttls
 
-## biokb_chebi.import_ttls
-::: biokb_chebi.import_ttls
+## biokb_chebi.import_neo4j
+::: biokb_chebi.import_neo4j
 
 ## Command Line Interface (CLI)
 
