@@ -70,7 +70,7 @@ class TurtleCreator:
         """
         self.__ttls_folder = export_to_folder
 
-    def create_ttls(self) -> str:
+    def create_turtles(self) -> str:
         """Create all turtle files.
 
         Returns:
@@ -323,7 +323,7 @@ class TurtleCreator:
         return ttl_path
 
 
-def create_ttls(
+def create_turtles(
     engine: Optional[Engine] = None,
     export_to_folder: Optional[str] = None,
 ) -> str:
@@ -344,4 +344,4 @@ def create_ttls(
     ttl_creator = TurtleCreator(engine=engine)
     if export_to_folder:
         ttl_creator._set_ttls_folder(export_to_folder)
-    return ttl_creator.create_ttls()
+    return ttl_creator.create_turtles()

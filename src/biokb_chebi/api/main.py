@@ -166,7 +166,7 @@ async def get_report(
     file_path = ZIPPED_TTLS_PATH
     if not os.path.exists(file_path) or force_create:
         try:
-            TurtleCreator().create_ttls()
+            TurtleCreator().create_turtles()
         except Exception as e:
             logger.error(f"Error generating TTL files: {e}")
             raise HTTPException(

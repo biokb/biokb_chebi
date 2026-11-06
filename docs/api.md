@@ -4,8 +4,8 @@
 
 ::: biokb_chebi.import_data
 
-## biokb_chebi.create_ttls
-::: biokb_chebi.create_ttls
+## biokb_chebi.create_turtles
+::: biokb_chebi.create_turtles
 
 ## biokb_chebi.import_neo4j
 ::: biokb_chebi.import_neo4j
@@ -15,8 +15,8 @@
 ### import_data
 ::: biokb_chebi.cli.import_data
 
-### create_ttls
-::: biokb_chebi.cli.create_ttls
+### create_turtles
+::: biokb_chebi.cli.create_turtles
 
 ### import_neo4j
 ::: biokb_chebi.cli.import_neo4j

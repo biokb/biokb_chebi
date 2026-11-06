@@ -94,9 +94,9 @@ biokb_chebi.db.manager - INFO - Insert data in database
 As Python functions in a script:
 
 ```python
-from biokb_chebi import import_data, create_ttls
+from biokb_chebi import import_data, create_turtles
 import_data()
-create_ttls()
+create_turtles()
 ```
 
 If you want to test the import into a Neo4j database, start a temporary container wiith podman:

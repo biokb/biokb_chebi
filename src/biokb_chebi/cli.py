@@ -115,7 +115,7 @@ def import_data(
     default=None,
     help="SQLAlchemy engine URL",
 )
-def create_ttls(connection_string: str) -> None:
+def create_turtles(connection_string: str) -> None:
     """Create TTL files from local database.
 
     Args:
@@ -126,7 +126,7 @@ def create_ttls(connection_string: str) -> None:
     except ValueError as e:
         logger.error(f"Error getting database engine: {e}")
         return
-    path_to_zip = TurtleCreator(engine).create_ttls()
+    path_to_zip = TurtleCreator(engine).create_turtles()
     click.echo(
         f"Path to the zip file containing all generated Turtle files. {path_to_zip}"
     )

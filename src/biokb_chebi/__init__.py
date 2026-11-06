@@ -3,7 +3,7 @@ from importlib.metadata import PackageNotFoundError, version
 
 from biokb_chebi.db.manager import DbManager, get_engine, get_session, import_data
 from biokb_chebi.rdf.neo4j_importer import Neo4jImporter, import_neo4j
-from biokb_chebi.rdf.turtle import TurtleCreator, create_ttls
+from biokb_chebi.rdf.turtle import TurtleCreator, create_turtles
 
 logger = logging.getLogger(__name__)
 logger.addHandler(logging.NullHandler())
@@ -22,5 +22,5 @@ __all__ = [
     "Neo4jImporter",
     "import_neo4j",
     "TurtleCreator",
-    "create_ttls",
+    "create_turtles",
 ]

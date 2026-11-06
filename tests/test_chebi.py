@@ -124,7 +124,7 @@ class TestTurtleCreation:
     def test_create_turtle(self, dbm: DbManager, tc: TurtleCreator) -> None:
         """Check if Turtle file is created."""
         dbm.import_data()
-        path_to_zip_file = tc.create_ttls()
+        path_to_zip_file = tc.create_turtles()
         path = Path(path_to_zip_file)
 
         assert path.exists()
@@ -165,7 +165,7 @@ class TestNeo4jImport:
             pytest.skip("Could not start Neo4j container.")
 
         dbm.import_data()
-        path_to_zip_file = tc.create_ttls()
+        path_to_zip_file = tc.create_turtles()
 
         importer = Neo4jImporter(
             neo4j_uri="bolt://localhost:7687",
