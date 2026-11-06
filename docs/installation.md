@@ -5,11 +5,12 @@
 If [uv](https://docs.astral.sh/uv/) is installed:
 
 ```bash
-python3 -m venv .venv
+uv venv
 source .venv/bin/activate
-pip install biokb_chebi
+uv pip install biokb_chebi
 ```
 
+Go to [Run BioKb-ChEBI](run_the_pipeline.md) to learn how to execute the pipeline (after installation).
 
 ### With Podman/Docker
 

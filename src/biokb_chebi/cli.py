@@ -47,7 +47,7 @@ def main() -> None:
 
     Please follow the steps:\n
     1. Import data using `import-data` command.\n
-    2. Create TTL files using `create-ttls` command.\n
+    2. Create TTL files using `create-turtles` command.\n
     3. Import TTL files into Neo4j using `import-neo4j` command.\n
     """
     _setup_default_cli_logging()
@@ -107,7 +107,7 @@ def import_data(
     )
 
 
-@main.command("create-ttls")
+@main.command("create-turtles")
 @click.option(
     "-c",
     "--connection-string",

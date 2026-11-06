@@ -29,10 +29,10 @@ For more examples please check [how to create database URLs](https://docs.sqlalc
 
 ### Create RDF turtles
 
-***Usage:*** `biokb_chebi create-ttls [OPTIONS]`
+***Usage:*** `biokb_chebi create-turtles [OPTIONS]`
 
 ```
-biokb_chebi create-ttls
+biokb_chebi create-turtles
 ```
 -> RDF turtles will be created in `~/.biokb/chebi/data/ttls.zip`
 

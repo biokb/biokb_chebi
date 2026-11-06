@@ -15,7 +15,7 @@ BioKb-ChEBI (biokb_chebi) is a python package to import [ChEBI (Chemical Entitie
 
 `biokb_chebi` provides different options to run it:
 
-1. command line (`biokb_chebi import-data`, `biokb_chebi create-ttls` and `biokb_chebi import-neo4j`)
+1. command line (`biokb_chebi import-data`, `biokb_chebi create-turtles` and `biokb_chebi import-neo4j`)
 2. RESTful API server ([FastAPI](https://fastapi.tiangolo.com/))
 3. [Podman](https://podman.io/)/Docker container
 4. Podman/Docker networked containers with phpMyAdmin, Neo4J and MySQL (using [`podman-compose`](https://github.com/containers/podman-compose) or [`docker-compose`](https://github.com/docker/compose)).
@@ -167,7 +167,7 @@ For sure the simplest way is to run all steps:
 
 ```bash
 biokb_chebi import-data
-biokb_chebi create-ttls
+biokb_chebi create-turtles
 ```
 
 Before importing into Neo4J, make sure Neo4J is running (see below "[How to run Neo4J](#how-to-run-neo4j)").
@@ -313,10 +313,10 @@ For more examples please check [how to create database URLs](https://docs.sqlalc
 
 ### Create RDF turtles
 
-***Usage:*** `biokb_chebi create-ttls [OPTIONS]`
+***Usage:*** `biokb_chebi create-turtles [OPTIONS]`
 
 ```
-biokb_chebi create-ttls
+biokb_chebi create-turtles
 ```
 
 -> RDF turtles will be created in `~/.biokb/chebi/data/ttls.zip`

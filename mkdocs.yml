@@ -36,10 +36,25 @@ extra_css:
 markdown_extensions:
   - toc:
       title: On this page
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+  - pymdownx.tabbed:
+      alternate_style: true
 nav:
   - Home: index.md
   - Installation: installation.md
   - Run the pipeline: run_the_pipeline.md
+  - How to install uv: how_to_install_uv.md
+  - How to install Podman: how_to_install_podman.md
   - Data model: data_model.md
   - CLI: cli.md
   - query_examples.ipynb

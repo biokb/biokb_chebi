@@ -2,13 +2,22 @@
 
 ### From command line
 
-For sure the simplest way is to run all steps. After installation (see [Installation](installation.md)) just run:
+For sure the simplest way is to run all steps as CLI commands. After installation (see [Installation](installation.md)) just run:
 
 ```bash
-biokb_chebi import-data
-biokb_chebi create-ttls
+biokb_chebi import-data # downloads and imports data into SQLite
+biokb_chebi create-turtles # generates TTL files from the imported data
 ```
-Before importing into Neo4J, make sure Neo4J is running (see below "[How to run Neo4J](how_to_run_neo4j.md)").
+
+`import-data` imports the data into a SQLite database. 
+
+| OS | SQLite location |
+|----|----------------|
+| Linux | `~/.biokb/biokb.db` |
+| macOS | `~/.biokb/biokb.db` |
+| Windows | `%USERPROFILE%\.biokb\biokb.db` |
+
+Before importing into Neo4J, make sure Neo4J is running (see [How to run Neo4J](how_to_run_neo4j.md)).
 
 Then import into Neo4J:
 ```bash
@@ -89,8 +98,8 @@ podman start biokb_chebi_simple
 If you have docker or podman on your system, the easiest way to run all components (relational database, RESTful API server, phpMyAdmin GUI) is to use networked containers with `podman-compose`/`docker-compose`.
 
 ```bash
-git clone https://github.com/biokb/biokb_taxtree.git
-cd biokb_taxtree
+git clone https://github.com/biokb/biokb_chebi.git
+cd biokb_chebi
 podman-compose -f docker-compose.yml --env-file .env_template up -d
 podman-compose --env-file .env_template up -d
 ```
