@@ -9,7 +9,15 @@ BioKb-ChEBI (biokb_chebi) is a python package to import ChEBI data into a relati
 
 ## Quick start
 
-Make sure you have installed `uv` and `podman` yet, otherwise follow the instructions in [How to install uv](how_to_install_uv.md) and [How to install podman](how_to_install_podman.md). Following command will:
+Make sure you have installed `uv` and `podman` yet, otherwise follow the instructions in [How to install uv](how_to_install_uv.md) and [How to install podman](how_to_install_podman.md). 
+
+Start a new terminal session and follow the instructions for your operating system below.
+```terminal
+podman run --rm --name biokb-neo4j -p7474:7474 -p7687:7687 -e NEO4J_AUTH=neo4j/neo4j_password neo4j:5.26.31
+```
+In an additional terminal session execute the following commands according to your operating system.
+
+Following commands will:
 
 1. Create a project directory and navigate into it. # line 1-2
 2. Set up a virtual environment and activate it. # line 3-4
@@ -30,7 +38,6 @@ Make sure you have installed `uv` and `podman` yet, otherwise follow the instruc
     uv pip install biokb_chebi
     biokb_chebi import-data
     biokb_chebi create-turtles
-    podman run --rm --name biokb-neo4j -p7474:7474 -p7687:7687 -e NEO4J_AUTH=neo4j/neo4j_password neo4j:5.26.31
     biokb_chebi import-neo4j
     biokb_chebi run-server
     ```
@@ -46,7 +53,6 @@ Make sure you have installed `uv` and `podman` yet, otherwise follow the instruc
     uv pip install biokb_chebi
     biokb_chebi import-data
     biokb_chebi create-turtles
-    podman run --rm --name biokb-neo4j -p7474:7474 -p7687:7687 -e NEO4J_AUTH=neo4j/neo4j_password neo4j:5.26.31
     biokb_chebi import-neo4j
     biokb_chebi run-server
     ```
@@ -62,7 +68,6 @@ Make sure you have installed `uv` and `podman` yet, otherwise follow the instruc
     uv pip install biokb_chebi
     biokb_chebi import-data
     biokb_chebi create-turtles
-    podman run --rm --name biokb-neo4j -p7474:7474 -p7687:7687 -e NEO4J_AUTH=neo4j/neo4j_password neo4j:5.26.31
     biokb_chebi import-neo4j
     biokb_chebi run-server
     ```
@@ -77,7 +82,6 @@ Make sure you have installed `uv` and `podman` yet, otherwise follow the instruc
     uv pip install biokb_chebi
     biokb_chebi import-data
     biokb_chebi create-turtles
-    podman run --rm --name biokb-neo4j -p7474:7474 -p7687:7687 -e NEO4J_AUTH=neo4j/neo4j_password neo4j:5.26.31
     biokb_chebi import-neo4j
     biokb_chebi run-server
     ```
